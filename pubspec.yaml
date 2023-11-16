@@ -37,6 +37,7 @@ dependencies:
   firebase_core: ^2.14.0
   cloud_firestore: ^4.8.1
   firebase_auth: ^4.6.0
+  flutter_naver_map: ^1.0.0-dev.5
 
 dev_dependencies:
   flutter_test:
