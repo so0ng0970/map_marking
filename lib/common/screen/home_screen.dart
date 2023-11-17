@@ -1,5 +1,5 @@
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 
 class HomeScreen extends StatelessWidget {
   static String get routeName => 'home';
@@ -7,6 +7,13 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      body: NaverMap(
+        options: const NaverMapViewOptions(),
+        onMapReady: (controller) {
+          print("네이버 맵 로딩됨!");
+        },
+      ),
+    );
   }
 }

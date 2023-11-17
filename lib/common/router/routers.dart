@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:map_marking/common/screen/spalsh_screen.dart';
-import '../../user/screen/login_screen.dart';
+import '../../user/screen/login_sign_screen.dart';
 import '../screen/home_screen.dart';
 
 class GoRouters {
@@ -15,8 +15,8 @@ class GoRouters {
         ),
         GoRoute(
           path: '/login',
-          name: LoginScreen.routeName,
-          builder: (context, state) => const LoginScreen(),
+          name: LoginSignScreen.routeName,
+          builder: (context, state) => const LoginSignScreen(),
         ),
         GoRoute(
           path: '/',

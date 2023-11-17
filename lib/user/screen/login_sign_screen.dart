@@ -1,29 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:map_marking/common/screen/home_screen.dart';
+import 'package:map_marking/user/component/custom_email.dart';
 
 import '../../common/const/color.dart';
 
-class LoginScreen extends StatefulWidget {
-  static String get routeName => 'login';
-  const LoginScreen({super.key});
+class LoginSignScreen extends StatefulWidget {
+  static String get routeName => 'login_sign';
+  const LoginSignScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<LoginSignScreen> createState() => _LoginSignScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginSignScreenState extends State<LoginSignScreen> {
+  OverlayEntry? _overlayEntry;
+  final LayerLink _layerLink = LayerLink();
+  final FocusNode nicknameFocus = FocusNode();
+  final FocusNode emailFocus = FocusNode();
+  final FocusNode passwordFocus = FocusNode();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final nicknameController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   bool sign = false;
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    nicknameController.dispose();
+    _removeEmailOverlay();
+    _overlayEntry?.dispose();
+    emailFocus.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    emailFocus.addListener(() {
+      if (!emailFocus.hasFocus) {
+        _removeEmailOverlay();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    TextFormField textFormField(
-        {required String hintText, required TextEditingController controller}) {
+    TextFormField textFormField({
+      required String hintText,
+      required TextEditingController controller,
+      FocusNode? focusNode,
+      void Function(String)? onChanged,
+    }) {
       return TextFormField(
         controller: controller,
+        onChanged: onChanged,
+        focusNode: focusNode,
         decoration: InputDecoration(
           filled: true,
           fillColor: WHITE_COLOR,
@@ -71,6 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     passwordController.clear();
                     nicknameController.clear();
                     confirmPasswordController.clear();
+                    _removeEmailOverlay();
                   });
                 }
               },
@@ -108,15 +145,23 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(
                             height: 10,
                           ),
-                          textFormField(
-                            controller: emailController,
-                            hintText: '이메일',
+                          CompositedTransformTarget(
+                            link: _layerLink,
+                            child: textFormField(
+                              controller: emailController,
+                              focusNode: emailFocus,
+                              hintText: '이메일',
+                              onChanged: (_) {
+                                _showEmailOverlay();
+                              },
+                            ),
                           ),
                           const SizedBox(
                             height: 20,
                           ),
                           if (sign)
                             textFormField(
+                              focusNode: nicknameFocus,
                               controller: nicknameController,
                               hintText: '닉네임',
                             ),
@@ -124,6 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: 20,
                           ),
                           textFormField(
+                            focusNode: passwordFocus,
                             controller: passwordController,
                             hintText: '비밀번호',
                           ),
@@ -157,6 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       passwordController.clear();
                                       nicknameController.clear();
                                       confirmPasswordController.clear();
+                                      _removeEmailOverlay();
                                     });
 
                                     print(sign);
@@ -177,7 +224,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor:
-                                    sign ? SIGN_BORDER : LOGIN_BUTTON,
+                                    sign ? SIGN_TEXT : LOGIN_BUTTON,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(
                                     40,
@@ -229,6 +276,46 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showEmailOverlay() {
+    if (emailFocus.hasFocus) {
+      if (emailController.text.isNotEmpty) {
+        final email = emailController.text;
+
+        if (!email.contains('@')) {
+          if (_overlayEntry == null) {
+            _overlayEntry = _emailListOverlayEntry();
+            Overlay.of(context).insert(_overlayEntry!);
+          }
+        } else {
+          _removeEmailOverlay();
+        }
+      } else {
+        _removeEmailOverlay();
+      }
+    }
+  }
+
+  void _removeEmailOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  // 이메일 자동 입력창
+  OverlayEntry _emailListOverlayEntry() {
+    return customDropdown.emailRecommendation(
+      width: MediaQuery.of(context).size.width - 20,
+      layerLink: _layerLink,
+      controller: emailController,
+      boderColor: SIGN_BG,
+      onPressed: () {
+        setState(() {
+          emailFocus.unfocus();
+          _removeEmailOverlay();
+        });
+      },
     );
   }
 }

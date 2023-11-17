@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:map_marking/common/screen/home_screen.dart';
 
-import '../../user/screen/login_screen.dart';
+import '../../user/screen/login_sign_screen.dart';
 import '../const/color.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -36,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
       context.goNamed(HomeScreen.routeName);
     } else {
       // Firebase에 로그인된 사용자가 없으면 LoginPage로 이동
-      context.goNamed(LoginScreen.routeName);
+      context.goNamed(LoginSignScreen.routeName);
     }
   }
 
