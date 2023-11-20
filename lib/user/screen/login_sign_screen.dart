@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:map_marking/common/screen/home_screen.dart';
+import 'package:map_marking/user/component/check_validate.dart';
 import 'package:map_marking/user/component/custom_email.dart';
 
 import '../../common/const/color.dart';
@@ -19,17 +20,18 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
   final FocusNode nicknameFocus = FocusNode();
   final FocusNode emailFocus = FocusNode();
   final FocusNode passwordFocus = FocusNode();
+  final FocusNode confirmPasswordFocus = FocusNode();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final nicknameController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
+
   bool sign = false;
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
-    confirmPasswordController.dispose();
     nicknameController.dispose();
     _removeEmailOverlay();
     _overlayEntry?.dispose();
@@ -52,14 +54,25 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
   Widget build(BuildContext context) {
     TextFormField textFormField({
       required String hintText,
-      required TextEditingController controller,
+      TextEditingController? controller,
       FocusNode? focusNode,
+      String? Function(String?)? validator,
       void Function(String)? onChanged,
+      int? maxLength,
+      bool? obscureText,
+      required TextInputType keyboardType,
+      required Key key,
     }) {
       return TextFormField(
+        key: key,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         controller: controller,
         onChanged: onChanged,
         focusNode: focusNode,
+        validator: validator,
+        maxLength: maxLength,
+        keyboardType: keyboardType,
+        obscureText: obscureText ?? false,
         decoration: InputDecoration(
           filled: true,
           fillColor: WHITE_COLOR,
@@ -106,7 +119,9 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
                     emailController.clear();
                     passwordController.clear();
                     nicknameController.clear();
-                    confirmPasswordController.clear();
+                    emailFocus.unfocus();
+                    passwordFocus.unfocus();
+                    nicknameFocus.unfocus();
                     _removeEmailOverlay();
                   });
                 }
@@ -119,20 +134,21 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
             ),
             Align(
               alignment: Alignment.bottomCenter,
-              child: SingleChildScrollView(
-                child: Container(
-                  height: 480,
-                  width: MediaQuery.of(context).size.width,
-                  decoration: const BoxDecoration(
-                    color: LOGIN_SUB_BG,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(40),
-                      topRight: Radius.circular(40),
-                    ),
+              child: Container(
+                height: 480,
+                width: MediaQuery.of(context).size.width,
+                decoration: const BoxDecoration(
+                  color: LOGIN_SUB_BG,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(40),
+                    topRight: Radius.circular(40),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 40, 10, 10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 40, 10, 10),
+                  child: SingleChildScrollView(
                     child: Form(
+                      key: formKey,
                       child: Column(
                         children: [
                           Text(
@@ -148,11 +164,16 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
                           CompositedTransformTarget(
                             link: _layerLink,
                             child: textFormField(
+                              key: sign ? const ValueKey(5) : const ValueKey(1),
                               controller: emailController,
                               focusNode: emailFocus,
+                              validator: (val) => CheckValidate()
+                                  .validateEmail(emailFocus, val!),
+                              keyboardType: TextInputType.emailAddress,
                               hintText: '이메일',
                               onChanged: (_) {
                                 _showEmailOverlay();
+                                _updateEmailOverlay();
                               },
                             ),
                           ),
@@ -161,16 +182,23 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
                           ),
                           if (sign)
                             textFormField(
+                              key: const ValueKey(2),
+                              maxLength: 15,
                               focusNode: nicknameFocus,
                               controller: nicknameController,
+                              validator: (val) => CheckValidate()
+                                  .validateNickName(nicknameFocus, val!),
+                              keyboardType: TextInputType.name,
                               hintText: '닉네임',
                             ),
-                          const SizedBox(
-                            height: 20,
-                          ),
                           textFormField(
+                            key: sign ? const ValueKey(6) : const ValueKey(3),
                             focusNode: passwordFocus,
                             controller: passwordController,
+                            obscureText: true,
+                            validator: (val) => CheckValidate()
+                                .validatePassword(passwordFocus, val!),
+                            keyboardType: TextInputType.name,
                             hintText: '비밀번호',
                           ),
                           const SizedBox(
@@ -178,7 +206,14 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
                           ),
                           if (sign)
                             textFormField(
-                              controller: confirmPasswordController,
+                              key: const ValueKey(4),
+                              obscureText: true,
+                              keyboardType: TextInputType.name,
+                              validator: (val) => CheckValidate()
+                                  .validatePasswordConfirmation(
+                                      confirmPasswordFocus,
+                                      val!,
+                                      passwordController.text),
                               hintText: '비밀번호 (확인)',
                             ),
                           SizedBox(
@@ -202,7 +237,9 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
                                       emailController.clear();
                                       passwordController.clear();
                                       nicknameController.clear();
-                                      confirmPasswordController.clear();
+                                      emailFocus.unfocus();
+                                      passwordFocus.unfocus();
+                                      nicknameFocus.unfocus();
                                       _removeEmailOverlay();
                                     });
 
@@ -234,7 +271,10 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
                                   color: LOGIN_BUTTON_BORDER,
                                 ),
                               ),
-                              onPressed: () {},
+                              onPressed: () async {
+                                if (formKey.currentState?.validate() ??
+                                    false) {}
+                              },
                               child: Text(
                                 sign ? '회원가입 하기' : '로그인 하기',
                                 style: const TextStyle(
@@ -301,6 +341,10 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
   void _removeEmailOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
+  }
+
+  void _updateEmailOverlay() {
+    _overlayEntry?.markNeedsBuild(); // OverlayEntry를 업데이트합니다.
   }
 
   // 이메일 자동 입력창
