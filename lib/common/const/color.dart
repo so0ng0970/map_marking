@@ -12,6 +12,7 @@ const LOGIN_SUB_BG = Color(0xFFE9DCC1);
 const LOGIN_BUTTON = Color(0xFFA06C20);
 const LOGIN_BUTTON_BORDER = Color(0xFF514538);
 const LOGIN_CLOSE_BUTTON = Color(0xFFFFF9EE);
+const LOGIN_DIVICE = Color(0xFF6F7A6B);
 
 const SIGN_TEXT = Color(0xFF132D3C);
 const SIGN_BG = Color(0xFF2F4858);

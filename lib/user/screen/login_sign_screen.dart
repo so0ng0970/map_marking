@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_naver_login/flutter_naver_login.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:map_marking/common/screen/home_screen.dart';
 import 'package:map_marking/user/component/check_validate.dart';
 import 'package:map_marking/user/component/custom_email.dart';
+import 'package:map_marking/user/provider/auth_provider.dart';
 
 import '../../common/const/color.dart';
 
-class LoginSignScreen extends StatefulWidget {
+class LoginSignScreen extends ConsumerStatefulWidget {
   static String get routeName => 'login_sign';
   const LoginSignScreen({super.key});
 
   @override
-  State<LoginSignScreen> createState() => _LoginSignScreenState();
+  ConsumerState<LoginSignScreen> createState() => _LoginSignScreenState();
 }
 
-class _LoginSignScreenState extends State<LoginSignScreen> {
+class _LoginSignScreenState extends ConsumerState<LoginSignScreen> {
   OverlayEntry? _overlayEntry;
   final LayerLink _layerLink = LayerLink();
   final FocusNode nicknameFocus = FocusNode();
@@ -27,6 +30,10 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
 
   bool sign = false;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+  String? tokenType;
+  String? accessToken;
+  String? refreshToken;
 
   @override
   void dispose() {
@@ -52,6 +59,7 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = ref.watch(loginSignProvider.notifier);
     TextFormField textFormField({
       required String hintText,
       TextEditingController? controller,
@@ -201,8 +209,8 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
                             keyboardType: TextInputType.name,
                             hintText: '비밀번호',
                           ),
-                          const SizedBox(
-                            height: 20,
+                          SizedBox(
+                            height: sign ? 30 : 20,
                           ),
                           if (sign)
                             textFormField(
@@ -217,7 +225,7 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
                               hintText: '비밀번호 (확인)',
                             ),
                           SizedBox(
-                            height: sign ? 48 : 100,
+                            height: sign ? 48 : 50,
                           ),
                           if (!sign)
                             Row(
@@ -272,8 +280,17 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
                                 ),
                               ),
                               onPressed: () async {
-                                if (formKey.currentState?.validate() ??
-                                    false) {}
+                                if (formKey.currentState?.validate() ?? false) {
+                                  if (sign) {
+                                    provider.registerUser(
+                                      context,
+                                      mounted,
+                                      nicknameController,
+                                      emailController,
+                                      passwordController,
+                                    );
+                                  }
+                                }
                               },
                               child: Text(
                                 sign ? '회원가입 하기' : '로그인 하기',
@@ -282,7 +299,51 @@ class _LoginSignScreenState extends State<LoginSignScreen> {
                                 ),
                               ),
                             ),
-                          )
+                          ),
+                          const SizedBox(
+                            height: 15,
+                          ),
+                          const Divider(
+                            thickness: 1,
+                            height: 1,
+                            color: LOGIN_DIVICE,
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          if (!sign)
+                            GestureDetector(
+                              onTap: () async {
+                                try {
+                                  final NaverLoginResult user =
+                                      await FlutterNaverLogin.logIn();
+                                  NaverAccessToken res = await FlutterNaverLogin
+                                      .currentAccessToken;
+
+                                  setState(() {
+                                    accessToken = res.accessToken;
+                                    tokenType = res.tokenType;
+                                    refreshToken = res.refreshToken;
+                                  });
+
+                                  String id = user.account.email;
+                                  String name = user.account.name;
+                                  String profileImage =
+                                      user.account.profileImage;
+                                  String idx = user.account.id.toString();
+
+                                  print('$id,$name, $idx');
+                                } catch (error) {
+                                  print('naver login error $error');
+                                }
+                              },
+                              child: SizedBox(
+                                height: 50,
+                                child: Image.asset(
+                                  'assets/images/logo/naver_login.png',
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),

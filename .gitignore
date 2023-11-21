@@ -128,3 +128,8 @@ web/
 macos/
 android/
 lib/common/const/data.dart
+.firebaserc
+firebase.json
+functions/package-lock.json
+functions/package.json
+functions/.eslintrc.js
