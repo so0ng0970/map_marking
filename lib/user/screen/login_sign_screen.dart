@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:map_marking/common/screen/home_screen.dart';
 import 'package:map_marking/user/component/check_validate.dart';
 import 'package:map_marking/user/component/custom_email.dart';
-import 'package:map_marking/user/provider/auth_provider.dart';
+import 'package:map_marking/user/provider/login_sign_provider.dart';
 
 import '../../common/const/color.dart';
 
@@ -300,14 +300,16 @@ class _LoginSignScreenState extends ConsumerState<LoginSignScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(
-                            height: 15,
-                          ),
-                          const Divider(
-                            thickness: 1,
-                            height: 1,
-                            color: LOGIN_DIVICE,
-                          ),
+                          if (!sign)
+                            const SizedBox(
+                              height: 15,
+                            ),
+                          if (!sign)
+                            const Divider(
+                              thickness: 1,
+                              height: 1,
+                              color: LOGIN_DIVICE,
+                            ),
                           const SizedBox(
                             height: 10,
                           ),

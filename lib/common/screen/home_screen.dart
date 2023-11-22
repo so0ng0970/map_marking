@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
+import 'package:map_marking/common/component/default_layout.dart';
 
 class HomeScreen extends StatelessWidget {
   static String get routeName => 'home';
@@ -7,7 +8,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return DefaultLayout(
       body: NaverMap(
         options: const NaverMapViewOptions(),
         onMapReady: (controller) {
