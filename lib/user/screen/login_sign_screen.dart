@@ -289,6 +289,11 @@ class _LoginSignScreenState extends ConsumerState<LoginSignScreen> {
                                       emailController,
                                       passwordController,
                                     );
+                                  } else {
+                                    ref
+                                        .watch(loginSignProvider.notifier)
+                                        .signInUser(context, emailController,
+                                            passwordController);
                                   }
                                 }
                               },

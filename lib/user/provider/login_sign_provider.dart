@@ -28,6 +28,33 @@ class LoginSignModel extends StateNotifier<LoginState> {
     this._authentication,
   ) : super(LoginState(isLogined: false));
 
+  Future<void> signInUser(
+    BuildContext context,
+    TextEditingController emailController,
+    TextEditingController passwordController,
+  ) async {
+    final email = emailController.text;
+    final password = passwordController.text;
+
+    if (email.isNotEmpty && password.isNotEmpty) {
+      try {
+        final credential = EmailAuthProvider.credential(
+          email: email,
+          password: password,
+        );
+        await _authentication.signInWithCredential(credential);
+
+        context.goNamed(
+          HomeScreen.routeName,
+        );
+      } on FirebaseAuthException {
+        // 오류 처리
+      }
+    } else {
+      print('오류가 발생했습니다 ');
+    }
+  }
+
   Future<void> registerUser(
     BuildContext context,
     bool mounted,

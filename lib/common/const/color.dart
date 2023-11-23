@@ -18,3 +18,7 @@ const SIGN_TEXT = Color(0xFF132D3C);
 const SIGN_BG = Color(0xFF2F4858);
 const SIGN_BORDER = Color(0xFF374955);
 const SIGN_BUTTON = Color(0xFF3B3426);
+
+// drawer
+const DRAWER_BG = Color(0xFFF2FCEE);
+const DRAWER_HEADER_BG = Color(0xFF00592E);
