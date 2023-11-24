@@ -4,21 +4,24 @@ part 'user_model.g.dart';
 
 @JsonSerializable()
 class UserModel {
-  late String uid;
-  late String email;
-  late String photoUrl;
-  late String userName;
+  late String? uid;
+  late String? email;
+  late String? photoUrl;
+  late String? userName;
 
   UserModel({
-    required this.uid,
-    required this.email,
-    required this.photoUrl,
-    required this.userName,
+    this.uid,
+    this.email,
+    this.photoUrl,
+    this.userName,
   });
+  bool get isEmpty {
+    return uid == null && email == null && photoUrl == null && userName == null;
+  }
 
-    factory UserModel.fromJson(Map<String, dynamic> json) =>
+  static UserModel get empty => UserModel();
+
+  factory UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json); // 현재 인스턴스를 변환 ,json 으로 instance 변환 하는 것
   Map<String, dynamic> toJson() => _$UserModelToJson(this);
 }
-
-
