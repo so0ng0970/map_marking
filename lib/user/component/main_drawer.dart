@@ -32,49 +32,61 @@ class MainDrawer extends ConsumerWidget {
             data: (user) {
               return ListView(
                 children: [
-                  Stack(
-                    children: [
-                      if (user != null)
-                        UserAccountsDrawerHeader(
-                          decoration: const BoxDecoration(
-                            color: DRAWER_HEADER_BG,
-                            borderRadius: BorderRadius.only(
-                              bottomRight: Radius.circular(45.0),
+                  if (user != null)
+                    SizedBox(
+                      height: 200,
+                      child: Stack(
+                        children: [
+                          UserAccountsDrawerHeader(
+                            decoration: const BoxDecoration(
+                              color: DRAWER_HEADER_BG,
+                              borderRadius: BorderRadius.only(
+                                bottomRight: Radius.circular(45.0),
+                              ),
+                            ),
+                            currentAccountPicture: CircleAvatar(
+                              // 현재 계정 이미지 set
+                              backgroundImage:
+                                  NetworkImage(user.photoUrl.toString()),
+                            ),
+                            accountName: Text(
+                              user.userName.toString(),
+                            ),
+                            accountEmail: Text(
+                              user.email.toString(),
                             ),
                           ),
-                          currentAccountPicture: CircleAvatar(
-                            // 현재 계정 이미지 set
-                            backgroundImage:
-                                NetworkImage(user.photoUrl.toString()),
-                          ),
-                          accountName: Text(
-                            user.userName.toString(),
-                          ),
-                          accountEmail: Text(
-                            user.email.toString(),
-                          ),
-                        ),
-                      Positioned(
-                        left: 55,
-                        child: IconButton(
-                          onPressed: () {},
-                          icon: const Icon(
-                            Icons.settings,
-                            size: 25,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
+                          if (user != null)
+                            Positioned(
+                              left: 55,
+                              child: IconButton(
+                                onPressed: () {},
+                                icon: const Icon(
+                                  Icons.settings,
+                                  size: 25,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            )
+                        ],
+                      ),
+                    ),
+                  if (user == null)
+                    const SizedBox(
+                      height: 10,
+                    ),
                   textButton(
                     () async {
-                      await logout.logout(context);
-                      context.goNamed(LoginSignScreen.routeName);
+                      if (user != null) {
+                        await logout.logout(context);
+                        context.pop();
+                      } else {
+                        context.goNamed(LoginSignScreen.routeName);
+                      }
                     },
-                    const Text(
-                      '로그아웃',
-                      style: TextStyle(color: SIGN_TEXT),
+                    Text(
+                      user != null ? '로그아웃' : '로그인 하기',
+                      style: const TextStyle(color: SIGN_TEXT),
                     ),
                   ),
                 ],

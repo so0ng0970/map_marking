@@ -332,7 +332,6 @@ class _LoginSignScreenState extends ConsumerState<LoginSignScreen> {
                                     tokenType = res.tokenType;
                                     refreshToken = res.refreshToken;
                                   });
-
                                   String id = user.account.email;
                                   String name = user.account.name;
                                   String profileImage =

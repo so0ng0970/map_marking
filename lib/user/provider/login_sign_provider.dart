@@ -47,8 +47,15 @@ class LoginSignModel extends StateNotifier<LoginState> {
         context.goNamed(
           HomeScreen.routeName,
         );
-      } on FirebaseAuthException {
-        // 오류 처리
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'INVALID_LOGIN_CREDENTIALS') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('등록되지 않았거나, 잘못된 이메일 혹은 비밀번호입니다'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       }
     } else {
       print('오류가 발생했습니다 ');
