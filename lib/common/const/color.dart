@@ -22,3 +22,7 @@ const SIGN_BUTTON = Color(0xFF3B3426);
 // drawer
 const DRAWER_BG = Color(0xFFF2FCEE);
 const DRAWER_HEADER_BG = Color(0xFF00592E);
+
+//home screen
+
+const HOME_FAIL_BG = Color(0xFFE6E6DA);
