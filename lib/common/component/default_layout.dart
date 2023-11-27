@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:map_marking/user/component/main_drawer.dart';
 
+import '../const/color.dart';
+
 class DefaultLayout extends StatelessWidget {
   Widget body;
   DefaultLayout({
@@ -13,6 +15,7 @@ class DefaultLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: DRAWER_HEADER_BG,
         actions: const [],
       ),
       drawer: const MainDrawer(),
