@@ -6,9 +6,11 @@ import '../const/color.dart';
 
 class DefaultLayout extends StatelessWidget {
   Widget body;
+  FloatingActionButton? floatingActionButton;
   DefaultLayout({
     Key? key,
     required this.body,
+    this.floatingActionButton,
   }) : super(key: key);
 
   @override
@@ -20,6 +22,7 @@ class DefaultLayout extends StatelessWidget {
       ),
       drawer: const MainDrawer(),
       body: body,
+      floatingActionButton: floatingActionButton,
     );
   }
 }
