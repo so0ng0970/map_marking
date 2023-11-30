@@ -58,6 +58,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return DefaultLayout(
       body: FutureBuilder<String>(
@@ -82,6 +88,27 @@ class _HomeScreenState extends State<HomeScreen> {
               onMapReady: (controller) {
                 _mapController = controller;
                 print("네이버 맵 로딩됨!");
+                final marker = NMarker(
+                  id: 'test',
+                  position: const NLatLng(
+                    37.5676438505,
+                    126.83211565,
+                  ),
+                );
+                final marker1 = NMarker(
+                  id: 'test1',
+                  position: const NLatLng(
+                    97.5676438505,
+                    126.83211565,
+                  ),
+                );
+                controller.addOverlayAll({marker, marker1});
+
+                final onMarkerInfoWindow = NInfoWindow.onMarker(
+                  id: marker.info.id,
+                  text: "서울 식물원",
+                );
+                marker.openInfoWindow(onMarkerInfoWindow);
               },
             );
           }
