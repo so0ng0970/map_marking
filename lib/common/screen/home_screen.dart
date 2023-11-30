@@ -16,6 +16,19 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   Future<String>? _locationFuture;
   Position? position;
+  NaverMapController? _mapController;
+
+  Future<void> updateCamera(Position? position) async {
+    NCameraPosition cameraPosition1 = NCameraPosition(
+      zoom: 15,
+      target: NLatLng(position!.latitude, position.longitude),
+    );
+    _mapController
+        ?.updateCamera(NCameraUpdate.fromCameraPosition(cameraPosition1));
+
+    print('이동');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -67,6 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     tilt: 0),
               ),
               onMapReady: (controller) {
+                _mapController = controller;
                 print("네이버 맵 로딩됨!");
               },
             );
@@ -91,7 +105,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: LOCATION_BG,
-        onPressed: () {},
+        onPressed: () {
+          setState(() {
+            updateCamera(position);
+          });
+        },
         child: const Icon(Icons.my_location),
       ),
     );
