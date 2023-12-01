@@ -25,3 +25,10 @@ const DRAWER_HEADER_BG = Color(0xFF00592E);
 //home screen
 const HOME_FAIL_BG = Color(0xFFE6E6DA);
 const LOCATION_BG = Color(0xFF002E00);
+const LOCATION = Color(0xFFAFAD88);
+const RECORD_BG = Color(0xFF494738);
+
+const MARKER_BUTTON = Color(0xFFEDECDC);
+const RECORD_TEXT = Color(0xFF1A1806);
+//record screen
+

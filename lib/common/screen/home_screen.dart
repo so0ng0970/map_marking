@@ -4,6 +4,7 @@ import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:map_marking/common/component/default_layout.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import '../../record/screen/record_screen.dart';
 import '../const/color.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -70,6 +71,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     onMapTapped: (point, latLng) {
                       if (markerTap) {
+                        setState(() {
+                          final marker = NMarker(
+                            id: 'test2',
+                            position:
+                                NLatLng(latLng.latitude, latLng.longitude),
+                          );
+
+                          _mapController?.addOverlay(marker);
+                        });
+
                         print('Marker');
                       } else {
                         print(latLng);
@@ -120,35 +131,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   )
                 ],
               ),
-              panel: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.drag_handle,
-                      color: Colors.grey,
-                    ),
-                    Row(
-                      children: [
-                        const Spacer(),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              markerTap = !markerTap;
-                            });
-                          },
-                          child: Text(
-                            markerTap ? '마커 하기' : '마커 추가하기',
-                          ),
-                        ),
-                      ],
-                    )
-                  ],
+              panel: Container(
+                color: RECORD_BG,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: RecordScreen(
+                    markerTap: markerTap,
+                    onMarkerTapChanged: onMarkerTapChanged,
+                  ),
                 ),
               ),
             );
@@ -159,6 +149,12 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
     );
+  }
+
+  void onMarkerTapChanged(bool markerTap) {
+    setState(() {
+      this.markerTap = markerTap;
+    });
   }
 
   Future<String> checkPermissionAndGetLocation() async {
