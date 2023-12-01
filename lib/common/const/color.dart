@@ -6,7 +6,6 @@ const WHITE_COLOR = Color(0xFFFFFFFF);
 const SPLASH_COLOR = Color(0xFF00C433);
 
 // login-sign screen
-// const LOGIN_BG = Color(0xFF9ACC31);
 const LOGIN_BG = Color(0xFF005900);
 const LOGIN_SUB_BG = Color(0xFFE9DCC1);
 const LOGIN_BUTTON = Color(0xFFA06C20);
@@ -24,6 +23,5 @@ const DRAWER_BG = Color(0xFFF2FCEE);
 const DRAWER_HEADER_BG = Color(0xFF00592E);
 
 //home screen
-
 const HOME_FAIL_BG = Color(0xFFE6E6DA);
 const LOCATION_BG = Color(0xFF002E00);
