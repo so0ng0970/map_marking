@@ -9,7 +9,10 @@ TextFormField textFormField({
   String? Function(String?)? validator,
   void Function(String)? onChanged,
   int? maxLength,
+  int? maxLines,
   bool? obscureText,
+  InputDecoration? decoration,
+  required double borderRadiusSize,
   required TextInputType keyboardType,
   required Key key,
 }) {
@@ -21,6 +24,7 @@ TextFormField textFormField({
     focusNode: focusNode,
     validator: validator,
     maxLength: maxLength,
+    maxLines: maxLines,
     keyboardType: keyboardType,
     obscureText: obscureText ?? false,
     decoration: InputDecoration(
@@ -28,13 +32,13 @@ TextFormField textFormField({
       fillColor: WHITE_COLOR,
       focusedBorder: OutlineInputBorder(
         borderSide: const BorderSide(color: WHITE_COLOR),
-        borderRadius: BorderRadius.circular(40.0),
+        borderRadius: BorderRadius.circular(borderRadiusSize),
       ),
-      enabledBorder: const OutlineInputBorder(
-        borderSide: BorderSide(color: LOGIN_BG),
+      enabledBorder: OutlineInputBorder(
+        borderSide: const BorderSide(color: LOGIN_BG),
         borderRadius: BorderRadius.all(
           Radius.circular(
-            50,
+            borderRadiusSize,
           ),
         ),
       ),

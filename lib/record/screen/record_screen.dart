@@ -55,9 +55,20 @@ class _RecordScreenState extends State<RecordScreen> {
             ],
           ),
           textFormField(
+            key: const ValueKey(1),
+            borderRadiusSize: 30,
             hintText: '제목',
             keyboardType: TextInputType.emailAddress,
-            key: const ValueKey(1),
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          textFormField(
+            key: const ValueKey(2),
+            borderRadiusSize: 10,
+            maxLines: 8,
+            keyboardType: TextInputType.emailAddress,
+            hintText: '다중 행 텍스트를 입력하세요',
           ),
           const SizedBox(
             height: 20,
@@ -79,11 +90,6 @@ class _RecordScreenState extends State<RecordScreen> {
                 color: PHOTO_BUTTON,
               ),
             ),
-          ),
-          textFormField(
-            hintText: '내용',
-            keyboardType: TextInputType.emailAddress,
-            key: const ValueKey(2),
           ),
         ],
       ),
