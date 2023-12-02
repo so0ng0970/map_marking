@@ -59,6 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final latitude = position!.latitude;
             final longitude = position!.longitude;
             return SlidingUpPanel(
+              minHeight: markerTap ? 200 : 100,
               body: Stack(
                 children: [
                   NaverMap(

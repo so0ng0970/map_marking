@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-//common
+// common
 const WHITE_COLOR = Color(0xFFFFFFFF);
+
 // splash
 const SPLASH_COLOR = Color(0xFF00C433);
 
@@ -22,13 +23,14 @@ const SIGN_BUTTON = Color(0xFF3B3426);
 const DRAWER_BG = Color(0xFFF2FCEE);
 const DRAWER_HEADER_BG = Color(0xFF00592E);
 
-//home screen
+// home screen
 const HOME_FAIL_BG = Color(0xFFE6E6DA);
 const LOCATION_BG = Color(0xFF002E00);
 const LOCATION = Color(0xFFAFAD88);
+
+// record screen
 const RECORD_BG = Color(0xFF494738);
-
-const MARKER_BUTTON = Color(0xFFEDECDC);
 const RECORD_TEXT = Color(0xFF1A1806);
-//record screen
-
+const MARKER_BUTTON = Color(0xFFEDECDC);
+const RECORD_OUTLINE = Color(0xFFD1CEBC);
+const PHOTO_BUTTON = Color(0xFFF7F2CB);
