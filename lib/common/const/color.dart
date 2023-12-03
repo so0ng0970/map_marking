@@ -34,3 +34,36 @@ const RECORD_TEXT = Color(0xFF1A1806);
 const MARKER_BUTTON = Color(0xFFEDECDC);
 const RECORD_OUTLINE = Color(0xFFD1CEBC);
 const PHOTO_BUTTON = Color(0xFFF7F2CB);
+
+// down drop
+
+const DROP_TEXT_1 = Color(0xFF960000);
+const DROP_TEXT_2 = Color(0xFFD15D00);
+const DROP_TEXT_3 = Color(0xFFF6DD00);
+const DROP_TEXT_4 = Color(0xFF279300);
+const DROP_TEXT_5 = Color(0xFF0081FF);
+const DROP_TEXT_6 = Color(0xFF2F4858);
+const DROP_TEXT_7 = Color(0xFFB050F2);
+const DROP_TEXT_8 = Color(0xFF5E5E5E);
+const UNSELECTED = Color(0xFFFCFAEC);
+
+List SELECTEDCOLOR = [
+  const Color(0xFFE4C9C8),
+  const Color(0xFFFAC294),
+  const Color(0xFFFCF0CA),
+  const Color(0xFFE1F8D4),
+  const Color(0xFFE7EFFF),
+  const Color(0xFF9BAEBC),
+  const Color(0xFFC9A8DB),
+  const Color(0xFFB9B9B9),
+];
+List DROPBACKCOLOR = [
+  const Color(0xFFFF0000),
+  const Color(0xFFFF7300),
+  const Color(0xFFFFE900),
+  const Color(0xFF279300),
+  const Color(0xFF0081FF),
+  const Color(0xFF1C0081),
+  const Color(0xFF9800FF),
+  const Color(0xFF5E5E5E),
+];

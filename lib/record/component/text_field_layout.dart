@@ -35,7 +35,7 @@ TextFormField textFormField({
         borderRadius: BorderRadius.circular(borderRadiusSize),
       ),
       enabledBorder: OutlineInputBorder(
-        borderSide: const BorderSide(color: LOGIN_BG),
+        borderSide: const BorderSide(color: RECORD_OUTLINE),
         borderRadius: BorderRadius.all(
           Radius.circular(
             borderRadiusSize,
