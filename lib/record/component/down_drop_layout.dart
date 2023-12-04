@@ -18,7 +18,7 @@ DropdownButtonFormField<String> dropdownButtonFormField({
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
         borderSide: const BorderSide(
-          color: DRAWER_BG,
+          color: FOCUS_BORDERSIDE,
           width: 2,
         ),
       ),
@@ -38,12 +38,15 @@ DropdownButtonFormField<String> dropdownButtonFormField({
     ),
     hint: const Text('선택하세요'),
     isDense: true,
+    isExpanded: true,
     value: selectedPicGroup,
     selectedItemBuilder: (BuildContext context) {
       return picGroup.map<Widget>((String item) {
         return DropdownMenuItem(
           value: item,
-          child: Text(item),
+          child: Text(
+            item,
+          ),
         );
       }).toList();
     },
@@ -70,7 +73,7 @@ DropdownButtonFormField<String> dropdownButtonFormField({
         ),
       );
     }).toList(),
-    validator: (value) => value?.isEmpty ?? true ? 'Cannot Empty' : null,
+    validator: (value) => value?.isEmpty ?? true ? '선택해주세요' : null,
     onChanged: onChanged,
   );
 }

@@ -3,6 +3,7 @@ import 'dart:core';
 import 'package:flutter/material.dart';
 
 class CheckValidate {
+  
   String? validatelength({
     required FocusNode focusNode,
     required String value,
@@ -15,7 +16,7 @@ class CheckValidate {
       return null;
     }
   }
-
+ 
   String? validateNickName(FocusNode focusNode, String value) {
     if (value.isEmpty) {
       focusNode.requestFocus();

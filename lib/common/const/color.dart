@@ -34,6 +34,8 @@ const RECORD_TEXT = Color(0xFF1A1806);
 const MARKER_BUTTON = Color(0xFFEDECDC);
 const RECORD_OUTLINE = Color(0xFFD1CEBC);
 const PHOTO_BUTTON = Color(0xFFF7F2CB);
+const POST_BUTTON = Color(0xFFA1EB8D);
+const FOCUS_BORDERSIDE = Color(0xFF98E184);
 
 // down drop
 

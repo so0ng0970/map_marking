@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   json_annotation: ^4.8.0
   firebase_core: ^2.14.0
-  cloud_firestore: ^4.8.1
+  cloud_firestore: ^4.13.0
   firebase_auth: ^4.6.0
   flutter_naver_map: ^1.0.0-dev.5
   firebase_storage: ^11.2.3
@@ -47,6 +47,9 @@ dependencies:
   flutter_naver_login: ^1.8.0
   geolocator: ^10.1.0
   sliding_up_panel: ^2.0.0+1
+  badges: ^3.0.0
+  image_picker: ^1.0.4
+  dotted_border: ^2.1.0
 
 dev_dependencies:
   flutter_test:

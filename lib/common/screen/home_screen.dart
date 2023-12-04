@@ -20,6 +20,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Position? position;
   NaverMapController? _mapController;
   bool markerTap = false;
+  double markerLatitude = 0.0;
+  double markerLongitude = 0.0;
   Future<void> updateCamera(Position? position) async {
     NCameraPosition cameraPosition1 = NCameraPosition(
       zoom: 15,
@@ -73,6 +75,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     onMapTapped: (point, latLng) {
                       if (markerTap) {
                         setState(() {
+                          markerLatitude = latLng.latitude;
+                          markerLongitude = latLng.longitude;
+
                           final marker = NMarker(
                             id: 'test2',
                             position:
@@ -139,6 +144,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: RecordScreen(
                     markerTap: markerTap,
                     onMarkerTapChanged: onMarkerTapChanged,
+                    markerLongitude: markerLongitude,
+                    markerLatitude: markerLatitude,
                   ),
                 ),
               ),

@@ -8,9 +8,9 @@ part 'record_model.g.dart';
 class RecordModel {
   String title;
   String content;
-  String postId;
-  String tag;
-  double location;
+  double markerLatitude;
+  double markerLongitude;
+  String selected;
   List<String>? imgUrl;
 
   @JsonKey(fromJson: _fromJsonTimestamp, toJson: _toJsonTimestamp)
@@ -18,19 +18,18 @@ class RecordModel {
   RecordModel({
     required this.title,
     required this.content,
-    required this.postId,
-    required this.tag,
-    required this.location,
+    required this.markerLatitude,
+    required this.markerLongitude,
+    required this.selected,
     this.imgUrl,
     required this.dataTime,
   });
 
- factory RecordModel.fromJson(Map<String, dynamic> json) =>
+  factory RecordModel.fromJson(Map<String, dynamic> json) =>
       _$RecordModelFromJson(json);
 
   get data => null;
   Map<String, dynamic> toJson() => _$RecordModelToJson(this);
-
 
   static DateTime _fromJsonTimestamp(Timestamp timestamp) => timestamp.toDate();
 
