@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../model/record_model.dart';
 
+final markerColorProvider = StateProvider<Color>((ref) => Colors.black);
+
+final selectedPicGroupProvider = StateProvider<String>((ref) => '');
 final recordDetailProvider =
     StateNotifierProvider<RecordDetailProvider, PostState>(
         (ref) => RecordDetailProvider());

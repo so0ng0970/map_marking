@@ -1,37 +1,40 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:map_marking/common/component/default_layout.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import '../../record/provider/record_detail_provider.dart';
 import '../../record/screen/record_screen.dart';
 import '../const/color.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   static String get routeName => 'home';
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<String>? _locationFuture;
   Position? position;
   NaverMapController? _mapController;
   bool markerTap = false;
+  bool recordTap = false;
   double markerLatitude = 0.0;
   double markerLongitude = 0.0;
-  Future<void> updateCamera(Position? position) async {
-    NCameraPosition cameraPosition1 = NCameraPosition(
-      zoom: 15,
-      target: NLatLng(position!.latitude, position.longitude),
-    );
-    _mapController
-        ?.updateCamera(NCameraUpdate.fromCameraPosition(cameraPosition1));
-
-    print('이동');
-  }
+  String? selectedPicGroup;
+  final List<String> picGroup = <String>[
+    '음식',
+    '카페',
+    '옷가게',
+    '공연',
+    '놀거리',
+    '미용실',
+    '기타'
+  ];
 
   @override
   void initState() {
@@ -48,6 +51,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedPicProvider =
+        ref.watch(selectedPicGroupProvider.notifier).state;
     return DefaultLayout(
       body: FutureBuilder<String>(
         future: _locationFuture,
@@ -75,10 +80,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     onMapTapped: (point, latLng) {
                       if (markerTap) {
                         setState(() {
+                          recordTap = true;
                           markerLatitude = latLng.latitude;
                           markerLongitude = latLng.longitude;
 
                           final marker = NMarker(
+                            iconTintColor:
+                                ref.read(markerColorProvider.notifier).state,
                             id: 'test2',
                             position:
                                 NLatLng(latLng.latitude, latLng.longitude),
@@ -142,10 +150,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: RecordScreen(
+              
+                    selectedPicGroup: selectedPicGroup,
+                    picGroup: picGroup,
+                    recordTap: recordTap,
                     markerTap: markerTap,
                     onMarkerTapChanged: onMarkerTapChanged,
                     markerLongitude: markerLongitude,
                     markerLatitude: markerLatitude,
+                    onRecordTapChanged: onRecordTapChanged,
                   ),
                 ),
               ),
@@ -159,9 +172,26 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> updateCamera(Position? position) async {
+    NCameraPosition cameraPosition1 = NCameraPosition(
+      zoom: 15,
+      target: NLatLng(position!.latitude, position.longitude),
+    );
+    _mapController
+        ?.updateCamera(NCameraUpdate.fromCameraPosition(cameraPosition1));
+
+    print('이동');
+  }
+
   void onMarkerTapChanged(bool markerTap) {
     setState(() {
       this.markerTap = markerTap;
+    });
+  }
+
+  void onRecordTapChanged(bool recordTap) {
+    setState(() {
+      this.recordTap = recordTap;
     });
   }
 

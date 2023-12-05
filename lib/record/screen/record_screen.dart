@@ -11,22 +11,30 @@ import 'package:map_marking/record/component/down_drop_layout.dart';
 import 'package:map_marking/record/component/text_field_layout.dart';
 import 'package:map_marking/record/model/record_model.dart';
 import 'package:map_marking/user/component/check_validate.dart';
-
 import '../../common/const/color.dart';
 import '../component/image_layout.dart';
 import '../provider/record_detail_provider.dart';
 
 class RecordScreen extends ConsumerStatefulWidget {
   bool markerTap;
+  bool recordTap;
   double markerLatitude;
   double markerLongitude;
+  List<String> picGroup;
+  String? selectedPicGroup;
   final Function(bool) onMarkerTapChanged;
+  final Function(bool) onRecordTapChanged;
+
   RecordScreen({
     Key? key,
     required this.markerTap,
+    required this.recordTap,
     required this.markerLatitude,
     required this.markerLongitude,
+    required this.picGroup,
+    this.selectedPicGroup,
     required this.onMarkerTapChanged,
+    required this.onRecordTapChanged,
   }) : super(key: key);
 
   @override
@@ -35,17 +43,9 @@ class RecordScreen extends ConsumerStatefulWidget {
 
 class _RecordScreenState extends ConsumerState<RecordScreen> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  String? selectedPicGroup;
+
   List<XFile> selectedImages = [];
-  final List<String> picGroup = <String>[
-    '음식',
-    '카페',
-    '옷가게',
-    '공연',
-    '놀거리',
-    '미용실',
-    '기타'
-  ];
+
   final FocusNode titleFocus = FocusNode();
   final FocusNode contentFocus = FocusNode();
   final FocusNode passwordFocus = FocusNode();
@@ -53,6 +53,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
   final titleController = TextEditingController();
   final contentController = TextEditingController();
   final nicknameController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     final postProvider = ref.watch(recordDetailProvider.notifier);
@@ -67,16 +68,20 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (widget.markerTap)
+              if (widget.recordTap)
                 SizedBox(
                   height: 55,
                   width: 120,
                   child: dropdownButtonFormField(
-                    picGroup: picGroup,
-                    selectedPicGroup: selectedPicGroup,
+                    picGroup: widget.picGroup,
+                    selectedPicGroup: widget.selectedPicGroup,
                     onChanged: (selectedItem) => setState(
                       () {
-                        selectedPicGroup = selectedItem!;
+                        widget.selectedPicGroup = selectedItem!;
+                        int selectedColorIndex =
+                            widget.picGroup.indexOf(selectedItem.toString());
+                        ref.read(markerColorProvider.notifier).state =
+                            MARKINGBACKCOLOR[selectedColorIndex];
                       },
                     ),
                   ),
@@ -105,22 +110,26 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                         RecordModel recordModel = RecordModel(
                             title: titleController.text,
                             content: contentController.text,
-                            selected: selectedPicGroup.toString(),
+                            selected: widget.selectedPicGroup.toString(),
                             dataTime: DateTime.now(),
                             markerLatitude: widget.markerLatitude,
                             markerLongitude: widget.markerLongitude,
                             imgUrl: imageUrls);
 
                         postProvider.savePostToFirestore(recordModel);
-
-                        selectedPicGroup = null;
+                        selectedImages = [];
+                        titleController.clear();
+                        contentController.clear();
+                        widget.selectedPicGroup = null;
                         widget.markerTap = false;
+                        widget.recordTap = false;
                       }
                     } else {
                       widget.markerTap = true;
                     }
                   });
                   widget.onMarkerTapChanged(widget.markerTap);
+                  widget.onRecordTapChanged(widget.recordTap);
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
@@ -132,7 +141,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
               ),
             ],
           ),
-          if (widget.markerTap)
+          if (widget.recordTap)
             Column(
               children: [
                 const SizedBox(
@@ -149,7 +158,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                         color: RECORD_OUTLINE,
                       ),
                   hintText: '제목',
-                  keyboardType: TextInputType.emailAddress,
+                  keyboardType: TextInputType.text,
                   validator: (val) => CheckValidate().validatelength(
                     focusNode: titleFocus,
                     value: val.toString(),
@@ -167,7 +176,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                   errorBorderRadius: 10,
                   hintText: '내용을 입력하세요',
                   maxLines: 8,
-                  keyboardType: TextInputType.emailAddress,
+                  keyboardType: TextInputType.text,
                   validator: (val) => CheckValidate().validatelength(
                     focusNode: contentFocus,
                     value: val.toString(),
