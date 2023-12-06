@@ -4,13 +4,16 @@ import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as Path;
+
 import 'package:map_marking/record/component/down_drop_layout.dart';
 import 'package:map_marking/record/component/text_field_layout.dart';
 import 'package:map_marking/record/model/record_model.dart';
 import 'package:map_marking/user/component/check_validate.dart';
+
 import '../../common/const/color.dart';
 import '../component/image_layout.dart';
 import '../provider/record_detail_provider.dart';
@@ -20,10 +23,10 @@ class RecordScreen extends ConsumerStatefulWidget {
   bool recordTap;
   double markerLatitude;
   double markerLongitude;
-  List<String> picGroup;
-  String? selectedPicGroup;
+  Color markerColor;
   final Function(bool) onMarkerTapChanged;
   final Function(bool) onRecordTapChanged;
+  NaverMapController? mapController;
 
   RecordScreen({
     Key? key,
@@ -31,10 +34,10 @@ class RecordScreen extends ConsumerStatefulWidget {
     required this.recordTap,
     required this.markerLatitude,
     required this.markerLongitude,
-    required this.picGroup,
-    this.selectedPicGroup,
+    required this.markerColor,
     required this.onMarkerTapChanged,
     required this.onRecordTapChanged,
+    required this.mapController,
   }) : super(key: key);
 
   @override
@@ -53,6 +56,16 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
   final titleController = TextEditingController();
   final contentController = TextEditingController();
   final nicknameController = TextEditingController();
+  String? selectedPicGroup;
+  final List<String> picGroup = <String>[
+    '음식',
+    '카페',
+    '옷가게',
+    '공연',
+    '놀거리',
+    '미용실',
+    '기타'
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -73,15 +86,28 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                   height: 55,
                   width: 120,
                   child: dropdownButtonFormField(
-                    picGroup: widget.picGroup,
-                    selectedPicGroup: widget.selectedPicGroup,
+                    picGroup: picGroup,
+                    selectedPicGroup: selectedPicGroup,
                     onChanged: (selectedItem) => setState(
                       () {
-                        widget.selectedPicGroup = selectedItem!;
+                        selectedPicGroup = selectedItem!;
                         int selectedColorIndex =
-                            widget.picGroup.indexOf(selectedItem.toString());
-                        ref.read(markerColorProvider.notifier).state =
+                            picGroup.indexOf(selectedItem.toString());
+                        widget.markerColor =
                             MARKINGBACKCOLOR[selectedColorIndex];
+                        ref.read(markerColorProvider.notifier).state =
+                            widget.markerColor;
+
+                        widget.mapController?.clearOverlays();
+
+                        widget.mapController?.addOverlay(
+                          NMarker(
+                            iconTintColor: widget.markerColor,
+                            id: 'test2',
+                            position: NLatLng(
+                                widget.markerLatitude, widget.markerLongitude),
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -108,19 +134,23 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                     if (widget.markerTap) {
                       if (formKey.currentState?.validate() ?? false) {
                         RecordModel recordModel = RecordModel(
+                            selectedColor: widget.markerColor.value,
                             title: titleController.text,
                             content: contentController.text,
-                            selected: widget.selectedPicGroup.toString(),
+                            selected: selectedPicGroup.toString(),
                             dataTime: DateTime.now(),
                             markerLatitude: widget.markerLatitude,
                             markerLongitude: widget.markerLongitude,
                             imgUrl: imageUrls);
-
-                        postProvider.savePostToFirestore(recordModel);
+                        if (widget.recordTap) {
+                          postProvider.savePostToFirestore(recordModel);
+                        }
                         selectedImages = [];
                         titleController.clear();
                         contentController.clear();
-                        widget.selectedPicGroup = null;
+                        selectedPicGroup = null;
+                        widget.mapController?.clearOverlays();
+                        widget.markerColor;
                         widget.markerTap = false;
                         widget.recordTap = false;
                       }
@@ -141,6 +171,18 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
               ),
             ],
           ),
+          if (widget.markerTap && !widget.recordTap)
+            Column(
+              children: const [
+                SizedBox(
+                  height: 30,
+                ),
+                Text(
+                  '지도에 원하는 장소를 눌러주세요',
+                  style: TextStyle(color: PHOTO_BUTTON),
+                ),
+              ],
+            ),
           if (widget.recordTap)
             Column(
               children: [

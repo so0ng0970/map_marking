@@ -20,22 +20,12 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<String>? _locationFuture;
   Position? position;
-  NaverMapController? _mapController;
+  NaverMapController? mapController;
   bool markerTap = false;
   bool recordTap = false;
   double markerLatitude = 0.0;
   double markerLongitude = 0.0;
-  String? selectedPicGroup;
-  final List<String> picGroup = <String>[
-    '음식',
-    '카페',
-    '옷가게',
-    '공연',
-    '놀거리',
-    '미용실',
-    '기타'
-  ];
-
+  Color markerColor = Colors.black;
   @override
   void initState() {
     super.initState();
@@ -45,14 +35,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void dispose() {
-    _mapController?.dispose();
+    mapController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final selectedPicProvider =
-        ref.watch(selectedPicGroupProvider.notifier).state;
     return DefaultLayout(
       body: FutureBuilder<String>(
         future: _locationFuture,
@@ -86,13 +74,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                           final marker = NMarker(
                             iconTintColor:
-                                ref.read(markerColorProvider.notifier).state,
+                                ref.watch(markerColorProvider.notifier).state,
                             id: 'test2',
                             position:
                                 NLatLng(latLng.latitude, latLng.longitude),
                           );
 
-                          _mapController?.addOverlay(marker);
+                          mapController?.addOverlay(marker);
                         });
 
                         print('Marker');
@@ -101,7 +89,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       }
                     },
                     onMapReady: (controller) {
-                      _mapController = controller;
+                      mapController = controller;
                       print("네이버 맵 로딩됨!");
                       final marker = NMarker(
                         id: 'test',
@@ -150,15 +138,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: RecordScreen(
-              
-                    selectedPicGroup: selectedPicGroup,
-                    picGroup: picGroup,
                     recordTap: recordTap,
                     markerTap: markerTap,
                     onMarkerTapChanged: onMarkerTapChanged,
                     markerLongitude: markerLongitude,
                     markerLatitude: markerLatitude,
                     onRecordTapChanged: onRecordTapChanged,
+                    mapController: mapController,
+                    markerColor: markerColor,
                   ),
                 ),
               ),
@@ -177,7 +164,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       zoom: 15,
       target: NLatLng(position!.latitude, position.longitude),
     );
-    _mapController
+    mapController
         ?.updateCamera(NCameraUpdate.fromCameraPosition(cameraPosition1));
 
     print('이동');
