@@ -79,6 +79,24 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
             color: LOCATION,
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              IconButton(
+                  onPressed: () {
+                    setState(() {
+                      removeController();
+
+                      widget.onMarkerTapChanged(widget.markerTap);
+                      widget.onRecordTapChanged(widget.recordTap);
+                    });
+                  },
+                  icon: const Icon(
+                    Icons.close,
+                    color: LOCATION,
+                  )),
+            ],
+          ),
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               if (widget.recordTap)
@@ -112,76 +130,63 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                     ),
                   ),
                 ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      widget.markerTap ? POST_BUTTON : MARKER_BUTTON,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+              const Spacer(),
+              if (widget.recordTap)
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        widget.markerTap ? POST_BUTTON : MARKER_BUTTON,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                   ),
-                ),
-                onPressed: () async {
-                  List<String> imageUrls = [];
-                  for (var image in selectedImages) {
-                    File imageFile = File(image.path);
-                    final taskSnapshot = await FirebaseStorage.instance
-                        .ref('images/${Path.basename(imageFile.path)}')
-                        .putFile(imageFile);
-                    final imageUrl = await taskSnapshot.ref.getDownloadURL();
-                    imageUrls.add(imageUrl);
-                  }
-                  setState(() {
-                    if (widget.markerTap) {
-                      if (formKey.currentState?.validate() ?? false) {
-                        RecordModel recordModel = RecordModel(
-                            selectedColor: widget.markerColor.value,
-                            title: titleController.text,
-                            content: contentController.text,
-                            selected: selectedPicGroup.toString(),
-                            dataTime: DateTime.now(),
-                            markerLatitude: widget.markerLatitude,
-                            markerLongitude: widget.markerLongitude,
-                            imgUrl: imageUrls);
-                        if (widget.recordTap) {
-                          postProvider.savePostToFirestore(recordModel);
-                        }
-                        selectedImages = [];
-                        titleController.clear();
-                        contentController.clear();
-                        selectedPicGroup = null;
-                        widget.mapController?.clearOverlays();
-                        widget.markerColor;
-                        widget.markerTap = false;
-                        widget.recordTap = false;
-                      }
-                    } else {
-                      widget.markerTap = true;
+                  onPressed: () async {
+                    List<String> imageUrls = [];
+                    for (var image in selectedImages) {
+                      File imageFile = File(image.path);
+                      final taskSnapshot = await FirebaseStorage.instance
+                          .ref('images/${Path.basename(imageFile.path)}')
+                          .putFile(imageFile);
+                      final imageUrl = await taskSnapshot.ref.getDownloadURL();
+                      imageUrls.add(imageUrl);
                     }
-                  });
-                  widget.onMarkerTapChanged(widget.markerTap);
-                  widget.onRecordTapChanged(widget.recordTap);
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Text(
-                    widget.markerTap ? '작성 하기' : '마커 추가하기',
-                    style: const TextStyle(color: RECORD_TEXT, fontSize: 17),
+                    setState(() {
+                      if (widget.markerTap) {
+                        if (formKey.currentState?.validate() ?? false) {
+                          RecordModel recordModel = RecordModel(
+                              selectedColor: widget.markerColor.value,
+                              title: titleController.text,
+                              content: contentController.text,
+                              selected: selectedPicGroup.toString(),
+                              dataTime: DateTime.now(),
+                              markerLatitude: widget.markerLatitude,
+                              markerLongitude: widget.markerLongitude,
+                              imgUrl: imageUrls);
+                          if (widget.recordTap) {
+                            postProvider.savePostToFirestore(recordModel);
+                          }
+                          removeController();
+                          widget.markerColor;
+                        }
+                      }
+                    });
+                    widget.onMarkerTapChanged(widget.markerTap);
+                    widget.onRecordTapChanged(widget.recordTap);
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.all(10.0),
+                    child: Text(
+                      '마커 추가하기',
+                      style: TextStyle(color: RECORD_TEXT, fontSize: 17),
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           if (widget.markerTap && !widget.recordTap)
-            Column(
-              children: const [
-                SizedBox(
-                  height: 30,
-                ),
-                Text(
-                  '지도에 원하는 장소를 눌러주세요',
-                  style: TextStyle(color: PHOTO_BUTTON),
-                ),
-              ],
+            const Text(
+              '지도에 원하는 장소를 눌러주세요',
+              style: TextStyle(color: PHOTO_BUTTON),
             ),
           if (widget.recordTap)
             Column(
@@ -297,6 +302,16 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
         ],
       ),
     );
+  }
+
+  void removeController() {
+    selectedImages = [];
+    titleController.clear();
+    contentController.clear();
+    selectedPicGroup = null;
+    widget.mapController?.clearOverlays();
+    widget.markerTap = false;
+    widget.recordTap = false;
   }
 
   final picker = ImagePicker();

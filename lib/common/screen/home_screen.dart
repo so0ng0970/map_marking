@@ -4,6 +4,7 @@ import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:map_marking/common/component/default_layout.dart';
+import 'package:map_marking/record/screen/record_detail_screen.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import '../../record/provider/record_detail_provider.dart';
 import '../../record/screen/record_screen.dart';
@@ -54,7 +55,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             final latitude = position!.latitude;
             final longitude = position!.longitude;
             return SlidingUpPanel(
-              minHeight: markerTap ? 200 : 100,
+              maxHeight: MediaQuery.of(context).size.height - 140,
+              minHeight: markerTap ? 150 : 100,
               body: Stack(
                 children: [
                   NaverMap(
@@ -115,7 +117,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     },
                   ),
                   Positioned(
-                    top: 400,
+                    top: 395,
                     right: 10,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -137,16 +139,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 color: RECORD_BG,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: RecordScreen(
-                    recordTap: recordTap,
-                    markerTap: markerTap,
-                    onMarkerTapChanged: onMarkerTapChanged,
-                    markerLongitude: markerLongitude,
-                    markerLatitude: markerLatitude,
-                    onRecordTapChanged: onRecordTapChanged,
-                    mapController: mapController,
-                    markerColor: markerColor,
-                  ),
+                  child: markerTap
+                      ? RecordScreen(
+                          recordTap: recordTap,
+                          markerTap: markerTap,
+                          onMarkerTapChanged: onMarkerTapChanged,
+                          markerLongitude: markerLongitude,
+                          markerLatitude: markerLatitude,
+                          onRecordTapChanged: onRecordTapChanged,
+                          mapController: mapController,
+                          markerColor: markerColor,
+                        )
+                      : RecordDetailScreen(
+                          markerTap: markerTap,
+                          onMarkerTapChanged: onMarkerTapChanged,
+                        ),
                 ),
               ),
             );

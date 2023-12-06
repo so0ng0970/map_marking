@@ -6,7 +6,6 @@ import '../model/record_model.dart';
 
 final markerColorProvider = StateProvider<Color>((ref) => Colors.black);
 
-final selectedPicGroupProvider = StateProvider<String>((ref) => '');
 final recordDetailProvider =
     StateNotifierProvider<RecordDetailProvider, PostState>(
         (ref) => RecordDetailProvider());
