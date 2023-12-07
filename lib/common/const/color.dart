@@ -38,7 +38,6 @@ const POST_BUTTON = Color(0xFFA1EB8D);
 const FOCUS_BORDERSIDE = Color(0xFF98E184);
 
 // down drop
-
 const DROP_TEXT_1 = Color(0xFF960000);
 const DROP_TEXT_2 = Color(0xFFD15D00);
 const DROP_TEXT_3 = Color(0xFFF6DD00);
@@ -48,6 +47,10 @@ const DROP_TEXT_6 = Color(0xFF2F4858);
 const DROP_TEXT_7 = Color(0xFFB050F2);
 const DROP_TEXT_8 = Color(0xFF5E5E5E);
 const UNSELECTED = Color(0xFFFCFAEC);
+
+// detail screen
+const DETAIL_BG = Color(0xFFF7F2CB);
+const DETAIL_BORDER = Color(0xFFC1BD97);
 
 List SELECTEDCOLOR = [
   const Color(0xFFE4C9C8),

@@ -1,11 +1,15 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:map_marking/common/component/default_layout.dart';
 import 'package:map_marking/record/screen/record_detail_screen.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:uuid/uuid.dart';
+import '../../record/model/record_model.dart';
 import '../../record/provider/record_detail_provider.dart';
 import '../../record/screen/record_screen.dart';
 import '../const/color.dart';
@@ -27,11 +31,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   double markerLatitude = 0.0;
   double markerLongitude = 0.0;
   Color markerColor = Colors.black;
+  static const pageSize = 8;
+
+  final PagingController<DocumentSnapshot?, RecordModel> pagingController =
+      PagingController(firstPageKey: null);
+
   @override
   void initState() {
     super.initState();
-
     _locationFuture = checkPermissionAndGetLocation();
+    pagingController.addPageRequestListener((pageKey) {
+      fetchPage(pageKey);
+    });
   }
 
   @override
@@ -42,6 +53,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final detailProvider = ref.watch(recordDetailProvider.notifier);
     return DefaultLayout(
       body: FutureBuilder<String>(
         future: _locationFuture,
@@ -77,7 +89,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           final marker = NMarker(
                             iconTintColor:
                                 ref.watch(markerColorProvider.notifier).state,
-                            id: 'test2',
+                            id:'text2',
                             position:
                                 NLatLng(latLng.latitude, latLng.longitude),
                           );
@@ -141,6 +153,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   padding: const EdgeInsets.all(8.0),
                   child: markerTap
                       ? RecordScreen(
+                   
                           recordTap: recordTap,
                           markerTap: markerTap,
                           onMarkerTapChanged: onMarkerTapChanged,
@@ -164,6 +177,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         },
       ),
     );
+  }
+
+  Future<void> fetchPage(DocumentSnapshot? pageKey) async {
+    try {
+      print('Fetching new page...');
+      final newSnapshots = await ref
+          .watch(recordDetailProvider.notifier)
+          .getPostListScrollFromFirestore(
+            pageKey,
+            pageSize,
+          );
+
+      if (newSnapshots.isEmpty) {
+        pagingController.appendLastPage([]);
+        return;
+      }
+      final newItems = newSnapshots
+          .map((snapshot) =>
+              RecordModel.fromJson(snapshot.data() as Map<String, dynamic>))
+          .toList();
+
+      final isLastPage = newItems.length < pageSize;
+      if (isLastPage) {
+        pagingController.appendLastPage(newItems);
+        print('Fetched last page with ${newItems.length} items.');
+      } else {
+        final nextPageKey = newSnapshots.last;
+        pagingController.appendPage(newItems, nextPageKey);
+        print('Fetched new page with ${newItems.length} items.');
+      }
+    } catch (error) {
+      print('Error fetching page: $error');
+      pagingController.error = error;
+    }
   }
 
   Future<void> updateCamera(Position? position) async {

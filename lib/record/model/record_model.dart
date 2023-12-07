@@ -1,6 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'record_model.g.dart';
@@ -14,9 +13,12 @@ class RecordModel {
   String selected;
   List<String>? imgUrl;
   int selectedColor;
+  String? markerId;
+  String recordId;
 
   @JsonKey(fromJson: _fromJsonTimestamp, toJson: _toJsonTimestamp)
   late DateTime dataTime;
+
   RecordModel({
     required this.title,
     required this.content,
@@ -24,7 +26,9 @@ class RecordModel {
     required this.markerLongitude,
     required this.selected,
     this.imgUrl,
+    this.markerId,
     required this.selectedColor,
+    required this.recordId,
     required this.dataTime,
   });
 

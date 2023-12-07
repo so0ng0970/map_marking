@@ -1,9 +1,13 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:map_marking/common/const/color.dart';
+import '../model/record_model.dart';
+import '../provider/record_detail_provider.dart';
 
-class RecordDetailScreen extends StatefulWidget {
+class RecordDetailScreen extends ConsumerStatefulWidget {
   bool markerTap;
   final Function(bool) onMarkerTapChanged;
   RecordDetailScreen({
@@ -13,10 +17,22 @@ class RecordDetailScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<RecordDetailScreen> createState() => _RecordDetailScreenState();
+  ConsumerState<RecordDetailScreen> createState() => _RecordDetailScreenState();
 }
 
-class _RecordDetailScreenState extends State<RecordDetailScreen> {
+class _RecordDetailScreenState extends ConsumerState<RecordDetailScreen> {
+  static const pageSize = 8;
+  final PagingController<DocumentSnapshot?, RecordModel> pagingController =
+      PagingController(firstPageKey: null);
+
+  @override
+  void initState() {
+    super.initState();
+    pagingController.addPageRequestListener((pageKey) {
+      fetchPage(pageKey);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -54,44 +70,102 @@ class _RecordDetailScreenState extends State<RecordDetailScreen> {
         const SizedBox(
           height: 10,
         ),
-        Container(
-          color: Colors.amber,
-          height: 100,
-          child: Row(
-            children: [
-              Image.asset(
-                'assets/images/icon/character1.png',
-                scale: 4,
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    '오늘은 여기',
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  SizedBox(
-                    height: 5,
-                  ),
-                  SizedBox(
-                    width: 290,
-                    child: Text(
-                      '나는 언덕 잔디가 이 지나가는 헤는 것은 하나에 있습니다. 아무 가을 책상을 아이들의 위에도 하나에 이웃 내린 위에 봅니다.배고프다 헤헤헤헤ㅇㄹㅇㄹㅇㄹㅇㄹ',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
+        SingleChildScrollView(
+          child: SizedBox(
+            height: 445,
+            child: PagedListView(
+              pagingController: pagingController,
+              builderDelegate: PagedChildBuilderDelegate(
+                  itemBuilder: (context, data, index) {
+                final recordData = pagingController.itemList![index];
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: DETAIL_BORDER,
+                        width: 2,
                       ),
-                      overflow: TextOverflow.fade,
-                      maxLines: 3,
+                      color: DETAIL_BG,
                     ),
-                  )
-                ],
-              )
-            ],
+                    height: 150,
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          'assets/images/icon/character1.png',
+                          scale: 4,
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              recordData.title,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 25,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 5,
+                            ),
+                            SizedBox(
+                              width: 250,
+                              child: Text(
+                                recordData.content,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                overflow: TextOverflow.fade,
+                                maxLines: 3,
+                              ),
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ),
           ),
         )
       ],
     );
+  }
+
+  Future<void> fetchPage(DocumentSnapshot? pageKey) async {
+    try {
+      print('Fetching new page...');
+      final newSnapshots = await ref
+          .watch(recordDetailProvider.notifier)
+          .getPostListScrollFromFirestore(
+            pageKey,
+            pageSize,
+          );
+
+      if (newSnapshots.isEmpty) {
+        pagingController.appendLastPage([]);
+        return;
+      }
+      final newItems = newSnapshots
+          .map((snapshot) =>
+              RecordModel.fromJson(snapshot.data() as Map<String, dynamic>))
+          .toList();
+
+      final isLastPage = newItems.length < pageSize;
+      if (isLastPage) {
+        pagingController.appendLastPage(newItems);
+        print('Fetched last page with ${newItems.length} items.');
+      } else {
+        final nextPageKey = newSnapshots.last;
+        pagingController.appendPage(newItems, nextPageKey);
+        print('Fetched new page with ${newItems.length} items.');
+      }
+    } catch (error) {
+      print('Error fetching page: $error');
+      pagingController.error = error;
+    }
   }
 }

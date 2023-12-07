@@ -13,6 +13,7 @@ import 'package:map_marking/record/component/down_drop_layout.dart';
 import 'package:map_marking/record/component/text_field_layout.dart';
 import 'package:map_marking/record/model/record_model.dart';
 import 'package:map_marking/user/component/check_validate.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../common/const/color.dart';
 import '../component/image_layout.dart';
@@ -46,9 +47,7 @@ class RecordScreen extends ConsumerStatefulWidget {
 
 class _RecordScreenState extends ConsumerState<RecordScreen> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-
   List<XFile> selectedImages = [];
-
   final FocusNode titleFocus = FocusNode();
   final FocusNode contentFocus = FocusNode();
   final FocusNode passwordFocus = FocusNode();
@@ -57,6 +56,8 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
   final contentController = TextEditingController();
   final nicknameController = TextEditingController();
   String? selectedPicGroup;
+  Uuid uuid = const Uuid();
+
   final List<String> picGroup = <String>[
     '음식',
     '카페',
@@ -154,14 +155,16 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                       if (widget.markerTap) {
                         if (formKey.currentState?.validate() ?? false) {
                           RecordModel recordModel = RecordModel(
-                              selectedColor: widget.markerColor.value,
-                              title: titleController.text,
-                              content: contentController.text,
-                              selected: selectedPicGroup.toString(),
-                              dataTime: DateTime.now(),
-                              markerLatitude: widget.markerLatitude,
-                              markerLongitude: widget.markerLongitude,
-                              imgUrl: imageUrls);
+                            selectedColor: widget.markerColor.value,
+                            title: titleController.text,
+                            content: contentController.text,
+                            selected: selectedPicGroup.toString(),
+                            dataTime: DateTime.now(),
+                            markerLatitude: widget.markerLatitude,
+                            markerLongitude: widget.markerLongitude,
+                            imgUrl: imageUrls,
+                            recordId: uuid.v4().toString(),
+                          );
                           if (widget.recordTap) {
                             postProvider.savePostToFirestore(recordModel);
                           }
