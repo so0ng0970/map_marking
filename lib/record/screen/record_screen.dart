@@ -8,12 +8,12 @@ import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as Path;
+import 'package:uuid/uuid.dart';
 
 import 'package:map_marking/record/component/down_drop_layout.dart';
 import 'package:map_marking/record/component/text_field_layout.dart';
 import 'package:map_marking/record/model/record_model.dart';
 import 'package:map_marking/user/component/check_validate.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../common/const/color.dart';
 import '../component/image_layout.dart';
@@ -28,7 +28,7 @@ class RecordScreen extends ConsumerStatefulWidget {
   final Function(bool) onMarkerTapChanged;
   final Function(bool) onRecordTapChanged;
   NaverMapController? mapController;
-
+  String testMarker;
   RecordScreen({
     Key? key,
     required this.markerTap,
@@ -39,6 +39,7 @@ class RecordScreen extends ConsumerStatefulWidget {
     required this.onMarkerTapChanged,
     required this.onRecordTapChanged,
     required this.mapController,
+    required this.testMarker,
   }) : super(key: key);
 
   @override
@@ -114,15 +115,15 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                             picGroup.indexOf(selectedItem.toString());
                         widget.markerColor =
                             MARKINGBACKCOLOR[selectedColorIndex];
-                        ref.read(markerColorProvider.notifier).state =
+                        ref.watch(markerColorProvider.notifier).state =
                             widget.markerColor;
 
-                        widget.mapController?.clearOverlays();
+                        // widget.mapController?.clearOverlays();
 
                         widget.mapController?.addOverlay(
                           NMarker(
                             iconTintColor: widget.markerColor,
-                            id: 'test2',
+                            id: widget.testMarker,
                             position: NLatLng(
                                 widget.markerLatitude, widget.markerLongitude),
                           ),
@@ -163,7 +164,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                             markerLatitude: widget.markerLatitude,
                             markerLongitude: widget.markerLongitude,
                             imgUrl: imageUrls,
-                            recordId: uuid.v4().toString(),
+                            markerId: uuid.v4().toString(),
                           );
                           if (widget.recordTap) {
                             postProvider.savePostToFirestore(recordModel);
@@ -312,7 +313,6 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
     titleController.clear();
     contentController.clear();
     selectedPicGroup = null;
-    widget.mapController?.clearOverlays();
     widget.markerTap = false;
     widget.recordTap = false;
   }

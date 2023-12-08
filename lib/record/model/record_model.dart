@@ -13,8 +13,8 @@ class RecordModel {
   String selected;
   List<String>? imgUrl;
   int selectedColor;
-  String? markerId;
-  String recordId;
+  String markerId;
+  String? postId;
 
   @JsonKey(fromJson: _fromJsonTimestamp, toJson: _toJsonTimestamp)
   late DateTime dataTime;
@@ -25,11 +25,11 @@ class RecordModel {
     required this.markerLatitude,
     required this.markerLongitude,
     required this.selected,
-    this.imgUrl,
-    this.markerId,
+    this.imgUrl, 
+    this.postId,
+    required this.markerId,
     required this.selectedColor,
-    required this.recordId,
-    required this.dataTime,
+ required this.dataTime,
   });
 
   factory RecordModel.fromJson(Map<String, dynamic> json) =>

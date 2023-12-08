@@ -14,9 +14,9 @@ RecordModel _$RecordModelFromJson(Map<String, dynamic> json) => RecordModel(
       selected: json['selected'] as String,
       imgUrl:
           (json['imgUrl'] as List<dynamic>?)?.map((e) => e as String).toList(),
-      selectedColor: json['selectedColor'] as int,
+      postId: json['postId'] as String?,
       markerId: json['markerId'] as String,
-      recordId: json['recordId'] as String,
+      selectedColor: json['selectedColor'] as int,
       dataTime: RecordModel._fromJsonTimestamp(json['dataTime'] as Timestamp),
     );
 
@@ -30,6 +30,6 @@ Map<String, dynamic> _$RecordModelToJson(RecordModel instance) =>
       'imgUrl': instance.imgUrl,
       'selectedColor': instance.selectedColor,
       'markerId': instance.markerId,
-      'recordId': instance.recordId,
+      'postId': instance.postId,
       'dataTime': RecordModel._toJsonTimestamp(instance.dataTime),
     };

@@ -5,12 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../model/record_model.dart';
 
 final markerColorProvider = StateProvider<Color>((ref) => Colors.black);
+final markerGetProvider = StreamProvider<List<RecordModel>>((ref) async* {
+  yield* ref.watch(recordDetailProvider.notifier).getPostListFromFirestore();
+});
+
 
 final recordDetailProvider =
     StateNotifierProvider<RecordDetailProvider, PostState>(
         (ref) => RecordDetailProvider());
-final selectedDateStateProvider =
-    StateProvider<DateTime>((ref) => DateTime.now());
 
 class PostState {
   final bool isLoading;
@@ -40,8 +42,9 @@ class RecordDetailProvider extends StateNotifier<PostState> {
           .collection('post')
           .doc();
 
+      model.postId = docRef.id;
       await docRef.set(model.toJson());
-      model.recordId = docRef.id;
+
       state = PostState(post: model);
     } catch (e) {
       state = PostState(error: e.toString());
@@ -49,7 +52,6 @@ class RecordDetailProvider extends StateNotifier<PostState> {
   }
 
   // 글 스크롤 - get
-
   Future<List<DocumentSnapshot>> getPostListScrollFromFirestore(
       DocumentSnapshot? pageKey, int pageSize) async {
     Query firebase = FirebaseFirestore.instance
@@ -70,7 +72,7 @@ class RecordDetailProvider extends StateNotifier<PostState> {
   }
 
   // 글 불러오기 - get
-  Stream<List<RecordModel>> getDiaryListFromFirestore(DateTime selectedDay) {
+  Stream<List<RecordModel>> getPostListFromFirestore() {
     return FirebaseFirestore.instance
         .collection('user')
         .doc(currentUser?.uid)

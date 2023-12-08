@@ -8,7 +8,6 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:map_marking/common/component/default_layout.dart';
 import 'package:map_marking/record/screen/record_detail_screen.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:uuid/uuid.dart';
 import '../../record/model/record_model.dart';
 import '../../record/provider/record_detail_provider.dart';
 import '../../record/screen/record_screen.dart';
@@ -54,6 +53,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final detailProvider = ref.watch(recordDetailProvider.notifier);
+    String testMarker = 'test1';
     return DefaultLayout(
       body: FutureBuilder<String>(
         future: _locationFuture,
@@ -71,63 +71,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               minHeight: markerTap ? 150 : 100,
               body: Stack(
                 children: [
-                  NaverMap(
-                    options: NaverMapViewOptions(
-                      initialCameraPosition: NCameraPosition(
-                          target: NLatLng(latitude, longitude),
-                          zoom: 15,
-                          bearing: 0,
-                          tilt: 0),
-                    ),
-                    onMapTapped: (point, latLng) {
-                      if (markerTap) {
-                        setState(() {
-                          recordTap = true;
-                          markerLatitude = latLng.latitude;
-                          markerLongitude = latLng.longitude;
+                  StreamBuilder<List<RecordModel>>(
+                      stream: detailProvider.getPostListFromFirestore(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const CircularProgressIndicator();
+                        } else {
+                          final post = snapshot.data!;
 
-                          final marker = NMarker(
-                            iconTintColor:
-                                ref.watch(markerColorProvider.notifier).state,
-                            id:'text2',
-                            position:
-                                NLatLng(latLng.latitude, latLng.longitude),
-                          );
+                          return NaverMap(
+                              options: NaverMapViewOptions(
+                                initialCameraPosition: NCameraPosition(
+                                  target: NLatLng(latitude, longitude),
+                                  zoom: 15,
+                                  bearing: 0,
+                                  tilt: 0,
+                                ),
+                              ),
+                              onMapTapped: (point, latLng) {
+                                if (markerTap) {
+                                  setState(() {
+                                    recordTap = true;
+                                    markerLatitude = latLng.latitude;
+                                    markerLongitude = latLng.longitude;
 
-                          mapController?.addOverlay(marker);
-                        });
+                                    final marker = NMarker(
+                                      iconTintColor: ref
+                                          .watch(markerColorProvider.notifier)
+                                          .state,
+                                      id: testMarker,
+                                      position: NLatLng(
+                                          latLng.latitude, latLng.longitude),
+                                    );
 
-                        print('Marker');
-                      } else {
-                        print(latLng);
-                      }
-                    },
-                    onMapReady: (controller) {
-                      mapController = controller;
-                      print("네이버 맵 로딩됨!");
-                      final marker = NMarker(
-                        id: 'test',
-                        position: const NLatLng(
-                          37.5676438505,
-                          126.83211565,
-                        ),
-                      );
-                      final marker1 = NMarker(
-                        id: 'test1',
-                        position: const NLatLng(
-                          97.5676438505,
-                          126.83211565,
-                        ),
-                      );
-                      controller.addOverlayAll({marker, marker1});
+                                    mapController?.addOverlay(marker);
+                                  });
+                                  print('Marker');
+                                } else {
+                                  print(latLng);
+                                }
+                              },
+                              onMapReady: (controller) {
+                                mapController = controller;
+                                for (var data in post) {
+                                  final marker = NMarker(
+                                    iconTintColor: Color(data.selectedColor),
+                                    id: data.markerId,
+                                    position: NLatLng(
+                                      data.markerLatitude,
+                                      data.markerLongitude,
+                                    ),
+                                  );
+                                  mapController?.addOverlay(marker);
+                                  controller.addOverlay(marker);
 
-                      final onMarkerInfoWindow = NInfoWindow.onMarker(
-                        id: marker.info.id,
-                        text: "서울 식물원",
-                      );
-                      marker.openInfoWindow(onMarkerInfoWindow);
-                    },
-                  ),
+                                  final onMarkerInfoWindow =
+                                      NInfoWindow.onMarker(
+                                    id: marker.info.id,
+                                    text: data.title,
+                                  );
+                                  marker.openInfoWindow(onMarkerInfoWindow);
+                                }
+                              });
+                        }
+                      }),
                   Positioned(
                     top: 395,
                     right: 10,
@@ -153,7 +160,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   padding: const EdgeInsets.all(8.0),
                   child: markerTap
                       ? RecordScreen(
-                   
+                          testMarker: testMarker,
                           recordTap: recordTap,
                           markerTap: markerTap,
                           onMarkerTapChanged: onMarkerTapChanged,
