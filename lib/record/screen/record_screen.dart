@@ -87,7 +87,12 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                   onPressed: () {
                     setState(() {
                       removeController();
-
+                      widget.mapController!.deleteOverlay(
+                        NOverlayInfo(
+                          type: NOverlayType.marker,
+                          id: widget.testMarker,
+                        ),
+                      );
                       widget.onMarkerTapChanged(widget.markerTap);
                       widget.onRecordTapChanged(widget.recordTap);
                     });
@@ -117,9 +122,6 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                             MARKINGBACKCOLOR[selectedColorIndex];
                         ref.watch(markerColorProvider.notifier).state =
                             widget.markerColor;
-
-                        // widget.mapController?.clearOverlays();
-
                         widget.mapController?.addOverlay(
                           NMarker(
                             iconTintColor: widget.markerColor,
@@ -154,23 +156,45 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                     }
                     setState(() {
                       if (widget.markerTap) {
+                        String markerId = uuid.v4().toString();
+                        String title = titleController.text;
                         if (formKey.currentState?.validate() ?? false) {
                           RecordModel recordModel = RecordModel(
                             selectedColor: widget.markerColor.value,
-                            title: titleController.text,
+                            title: title,
                             content: contentController.text,
                             selected: selectedPicGroup.toString(),
                             dataTime: DateTime.now(),
                             markerLatitude: widget.markerLatitude,
                             markerLongitude: widget.markerLongitude,
                             imgUrl: imageUrls,
-                            markerId: uuid.v4().toString(),
+                            markerId: markerId,
                           );
                           if (widget.recordTap) {
                             postProvider.savePostToFirestore(recordModel);
                           }
+
                           removeController();
-                          widget.markerColor;
+                          widget.mapController!.deleteOverlay(
+                            NOverlayInfo(
+                              type: NOverlayType.marker,
+                              id: widget.testMarker,
+                            ),
+                          );
+                          final marker = NMarker(
+                            iconTintColor: widget.markerColor,
+                            id: markerId,
+                            position: NLatLng(
+                              widget.markerLatitude,
+                              widget.markerLongitude,
+                            ),
+                          );
+                          widget.mapController!.addOverlay(marker);
+                          final onMarkerInfoWindow = NInfoWindow.onMarker(
+                            id: markerId,
+                            text: title,
+                          );
+                          marker.openInfoWindow(onMarkerInfoWindow);
                         }
                       }
                     });

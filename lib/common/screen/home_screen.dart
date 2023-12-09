@@ -123,7 +123,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     ),
                                   );
                                   mapController?.addOverlay(marker);
-                                  controller.addOverlay(marker);
 
                                   final onMarkerInfoWindow =
                                       NInfoWindow.onMarker(
@@ -131,6 +130,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     text: data.title,
                                   );
                                   marker.openInfoWindow(onMarkerInfoWindow);
+                                  marker.setOnTapListener(
+                                    (NMarker marker) => marker = NMarker(
+                                      id: data.markerId,
+                                      position: NLatLng(
+                                        data.markerLatitude,
+                                        data.markerLongitude,
+                                      ),
+                                      size: const Size(40, 40),
+                                    ),
+                                  );
                                 }
                               });
                         }
