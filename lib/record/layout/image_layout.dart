@@ -6,11 +6,15 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ImageLayout extends StatefulWidget {
-  List<XFile> selectedImages;
+  List<XFile>? selectedImages;
+  List<String>? selectedNetworkImages;
+  bool networkImages;
   int initialIndex;
   ImageLayout({
     Key? key,
-    required this.selectedImages,
+    this.selectedImages,
+    this.selectedNetworkImages,
+    required this.networkImages,
     required this.initialIndex,
   }) : super(key: key);
 
@@ -41,13 +45,19 @@ class _ImageLayoutState extends State<ImageLayout> {
             color: Colors.black87,
             child: PageView.builder(
               controller: _pageController,
-              itemCount: widget.selectedImages.length,
+              itemCount: widget.networkImages
+                  ? widget.selectedNetworkImages?.length
+                  : widget.selectedImages?.length,
               itemBuilder: (context, index) {
                 return SizedBox(
                   width: MediaQuery.of(context).size.width,
-                  child: Image.file(
-                    File(widget.selectedImages[index].path),
-                  ),
+                  child: widget.networkImages
+                      ? Image.network(
+                          widget.selectedNetworkImages![index],
+                        )
+                      : Image.file(
+                          File(widget.selectedImages![index].path),
+                        ),
                 );
               },
             ),

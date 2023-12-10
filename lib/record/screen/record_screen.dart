@@ -10,13 +10,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as Path;
 import 'package:uuid/uuid.dart';
 
-import 'package:map_marking/record/component/down_drop_layout.dart';
-import 'package:map_marking/record/component/text_field_layout.dart';
+import 'package:map_marking/record/layout/down_drop_layout.dart';
+import 'package:map_marking/record/layout/text_field_layout.dart';
 import 'package:map_marking/record/model/record_model.dart';
 import 'package:map_marking/user/component/check_validate.dart';
 
 import '../../common/const/color.dart';
-import '../component/image_layout.dart';
+import '../layout/image_layout.dart';
 import '../provider/record_detail_provider.dart';
 
 class RecordScreen extends ConsumerStatefulWidget {
@@ -288,6 +288,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                                       return ImageLayout(
                                         initialIndex: index,
                                         selectedImages: selectedImages,
+                                        networkImages: false,
                                       );
                                     });
                               },

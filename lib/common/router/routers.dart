@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:map_marking/common/screen/spalsh_screen.dart';
+import 'package:map_marking/record/screen/record_detail_screen.dart';
 import '../../user/screen/login_sign_screen.dart';
 import '../screen/home_screen.dart';
 

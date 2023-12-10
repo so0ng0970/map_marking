@@ -5,11 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../model/record_model.dart';
 
 final markerColorProvider = StateProvider<Color>((ref) => Colors.black);
-final markerGetProvider = StreamProvider<List<RecordModel>>((ref) async* {
-  yield* ref.watch(recordDetailProvider.notifier).getPostListFromFirestore();
-});
-
-
 final recordDetailProvider =
     StateNotifierProvider<RecordDetailProvider, PostState>(
         (ref) => RecordDetailProvider());
@@ -85,5 +80,15 @@ class RecordDetailProvider extends StateNotifier<PostState> {
         .map((snapshot) => snapshot.docs
             .map((doc) => RecordModel.fromJson(doc.data()))
             .toList());
+  }
+
+  // 글 삭제
+  Future<void> deletePost(String postId) {
+    return FirebaseFirestore.instance
+        .collection('user')
+        .doc(currentUser?.uid)
+        .collection('post')
+        .doc(postId)
+        .delete();
   }
 }

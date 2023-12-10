@@ -18,7 +18,11 @@ class DefaultLayout extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: DRAWER_HEADER_BG,
-        actions: const [],
+        centerTitle: true,
+        title: Image.asset(
+          'assets/images/logo/logo_maap.png',
+          scale: 3.5,
+        ),
       ),
       drawer: const MainDrawer(),
       body: body,

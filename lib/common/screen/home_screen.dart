@@ -6,10 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:map_marking/common/component/default_layout.dart';
-import 'package:map_marking/record/screen/record_detail_screen.dart';
+import 'package:map_marking/record/screen/record_detail_list_screen.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import '../../record/model/record_model.dart';
 import '../../record/provider/record_detail_provider.dart';
+import '../../record/screen/record_detail_screen.dart';
 import '../../record/screen/record_screen.dart';
 import '../const/color.dart';
 
@@ -22,6 +23,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  bool detailTap = false;
   Future<String>? _locationFuture;
   Position? position;
   NaverMapController? mapController;
@@ -31,7 +33,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   double markerLongitude = 0.0;
   Color markerColor = Colors.black;
   static const pageSize = 8;
-
+  String? markerId;
   final PagingController<DocumentSnapshot?, RecordModel> pagingController =
       PagingController(firstPageKey: null);
 
@@ -130,16 +132,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     text: data.title,
                                   );
                                   marker.openInfoWindow(onMarkerInfoWindow);
-                                  marker.setOnTapListener(
-                                    (NMarker marker) => marker = NMarker(
-                                      id: data.markerId,
-                                      position: NLatLng(
-                                        data.markerLatitude,
-                                        data.markerLongitude,
-                                      ),
-                                      size: const Size(40, 40),
-                                    ),
-                                  );
+                                  marker.setOnTapListener((NMarker marker) {
+                                    setState(() {
+                                      detailTap = true;
+                                      markerId = marker.info.id;
+                                      print('dd $markerId');
+                                    });
+                                  });
                                 }
                               });
                         }
@@ -163,28 +162,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   )
                 ],
               ),
-              panel: Container(
-                color: RECORD_BG,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: markerTap
-                      ? RecordScreen(
-                          testMarker: testMarker,
-                          recordTap: recordTap,
-                          markerTap: markerTap,
-                          onMarkerTapChanged: onMarkerTapChanged,
-                          markerLongitude: markerLongitude,
-                          markerLatitude: markerLatitude,
-                          onRecordTapChanged: onRecordTapChanged,
-                          mapController: mapController,
-                          markerColor: markerColor,
-                        )
-                      : RecordDetailScreen(
-                          markerTap: markerTap,
-                          onMarkerTapChanged: onMarkerTapChanged,
-                        ),
-                ),
-              ),
+              panel: detailTap
+                  ? Container(
+                      color: RECORD_BG,
+                      child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: RecordDetailScreen(
+                              mapController: mapController,
+                              markerId: markerId.toString(),
+                              detailTap: detailTap,
+                              onDetailTapChanged: onDetailTapChanged)),
+                    )
+                  : Container(
+                      color: RECORD_BG,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: markerTap
+                            ? RecordScreen(
+                                testMarker: testMarker,
+                                recordTap: recordTap,
+                                markerTap: markerTap,
+                                onMarkerTapChanged: onMarkerTapChanged,
+                                markerLongitude: markerLongitude,
+                                markerLatitude: markerLatitude,
+                                onRecordTapChanged: onRecordTapChanged,
+                                mapController: mapController,
+                                markerColor: markerColor,
+                              )
+                            : RecordDetailListScreen(
+                                mapController: mapController,
+                                markerTap: markerTap,
+                                onMarkerTapChanged: onMarkerTapChanged,
+                              ),
+                      ),
+                    ),
             );
           }
           return ErrorScreen(
@@ -238,6 +249,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ?.updateCamera(NCameraUpdate.fromCameraPosition(cameraPosition1));
 
     print('이동');
+  }
+
+  void onDetailTapChanged(bool detailTap) {
+    setState(() {
+      this.detailTap = detailTap;
+    });
   }
 
   void onMarkerTapChanged(bool markerTap) {

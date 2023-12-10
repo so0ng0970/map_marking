@@ -52,6 +52,11 @@ const UNSELECTED = Color(0xFFFCFAEC);
 const DETAIL_BG = Color(0xFFF7F2CB);
 const DETAIL_BORDER = Color(0xFFC1BD97);
 
+// button layout
+const BUTTON_BG = Color(0xFF006851);
+const BUTTON_BORDER = Color(0xFFF1FCF4);
+const BUTTON_TEXT = Color(0xFF001600);
+
 List SELECTEDCOLOR = [
   const Color(0xFFE4C9C8),
   const Color(0xFFFAC294),
