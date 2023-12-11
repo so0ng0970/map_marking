@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:map_marking/common/const/color.dart';
 import 'package:map_marking/record/layout/button_layout.dart';
@@ -40,9 +41,8 @@ class _RecordDetailScreenState extends ConsumerState<RecordDetailScreen> {
         }
         if (snapshot.hasData) {
           List<RecordModel> posts = snapshot.data!;
-          RecordModel post = posts.firstWhere(
+          RecordModel? post = posts.firstWhere(
             (post) => post.markerId == widget.markerId,
-            orElse: () => null,
           );
           return Padding(
             padding: const EdgeInsets.all(8.0),
@@ -93,6 +93,8 @@ class _RecordDetailScreenState extends ConsumerState<RecordDetailScreen> {
                           ),
                         );
                         widget.detailTap = false;
+                        widget.onDetailTapChanged(widget.detailTap);
+                        context.pop();
                       },
                       editButton: () {},
                     ),

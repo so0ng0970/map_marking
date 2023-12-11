@@ -32,6 +32,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   double markerLatitude = 0.0;
   double markerLongitude = 0.0;
   Color markerColor = Colors.black;
+  NMarker tapMarker = NMarker(
+    id: 'edf4acf5-8705-4607-87af-fa61633d3f54',
+    position: const NLatLng(
+      0,
+      0,
+    ),
+  );
   static const pageSize = 8;
   String? markerId;
   final PagingController<DocumentSnapshot?, RecordModel> pagingController =
@@ -82,65 +89,73 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           final post = snapshot.data!;
 
                           return NaverMap(
-                              options: NaverMapViewOptions(
-                                initialCameraPosition: NCameraPosition(
-                                  target: NLatLng(latitude, longitude),
-                                  zoom: 15,
-                                  bearing: 0,
-                                  tilt: 0,
-                                ),
+                            forceGesture: true,
+                            options: NaverMapViewOptions(
+                              initialCameraPosition: NCameraPosition(
+                                target: NLatLng(latitude, longitude),
+                                zoom: 15,
+                                bearing: 0,
+                                tilt: 0,
                               ),
-                              onMapTapped: (point, latLng) {
-                                if (markerTap) {
-                                  setState(() {
-                                    recordTap = true;
-                                    markerLatitude = latLng.latitude;
-                                    markerLongitude = latLng.longitude;
+                            ),
+                            onMapTapped: (point, latLng) {
+                              if (markerTap) {
+                                setState(() {
+                                  recordTap = true;
+                                  markerLatitude = latLng.latitude;
+                                  markerLongitude = latLng.longitude;
 
-                                    final marker = NMarker(
-                                      iconTintColor: ref
-                                          .watch(markerColorProvider.notifier)
-                                          .state,
-                                      id: testMarker,
-                                      position: NLatLng(
-                                          latLng.latitude, latLng.longitude),
-                                    );
-
-                                    mapController?.addOverlay(marker);
-                                  });
-                                  print('Marker');
-                                } else {
-                                  print(latLng);
-                                }
-                              },
-                              onMapReady: (controller) {
-                                mapController = controller;
-                                for (var data in post) {
                                   final marker = NMarker(
-                                    iconTintColor: Color(data.selectedColor),
-                                    id: data.markerId,
+                                    iconTintColor: ref
+                                        .watch(markerColorProvider.notifier)
+                                        .state,
+                                    id: testMarker,
                                     position: NLatLng(
-                                      data.markerLatitude,
-                                      data.markerLongitude,
-                                    ),
+                                        latLng.latitude, latLng.longitude),
                                   );
-                                  mapController?.addOverlay(marker);
-
-                                  final onMarkerInfoWindow =
-                                      NInfoWindow.onMarker(
-                                    id: marker.info.id,
-                                    text: data.title,
-                                  );
-                                  marker.openInfoWindow(onMarkerInfoWindow);
-                                  marker.setOnTapListener((NMarker marker) {
-                                    setState(() {
-                                      detailTap = true;
-                                      markerId = marker.info.id;
-                                      print('dd $markerId');
-                                    });
+                                });
+                                print('Marker');
+                              } else {
+                                print(latLng);
+                                print(tapMarker);
+                                tapMarker.setOnTapListener((marker) {
+                                  setState(() {
+                                    detailTap = true;
+                                    markerId = marker.info.id;
+                                    print('dd $markerId');
                                   });
-                                }
-                              });
+                                });
+                              }
+                            },
+                            onMapReady: (controller) {
+                              mapController = controller;
+
+                              for (var data in post) {
+                                final marker = NMarker(
+                                  iconTintColor: Color(data.selectedColor),
+                                  id: data.markerId,
+                                  position: NLatLng(
+                                    data.markerLatitude,
+                                    data.markerLongitude,
+                                  ),
+                                );
+                                mapController?.addOverlay(marker);
+
+                                final onMarkerInfoWindow = NInfoWindow.onMarker(
+                                  id: marker.info.id,
+                                  text: data.title,
+                                );
+                                marker.openInfoWindow(onMarkerInfoWindow);
+                                marker.setOnTapListener((marker) {
+                                  setState(() {
+                                    detailTap = true;
+                                    markerId = marker.info.id;
+                                    print('dd $markerId');
+                                  });
+                                });
+                              }
+                            },
+                          );
                         }
                       }),
                   Positioned(
@@ -179,6 +194,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         padding: const EdgeInsets.all(8.0),
                         child: markerTap
                             ? RecordScreen(
+                                tapMarker: tapMarker,
                                 testMarker: testMarker,
                                 recordTap: recordTap,
                                 markerTap: markerTap,
@@ -188,6 +204,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 onRecordTapChanged: onRecordTapChanged,
                                 mapController: mapController,
                                 markerColor: markerColor,
+                                onTapMarkerChanged: onTapMarkerChanged,
                               )
                             : RecordDetailListScreen(
                                 mapController: mapController,
@@ -204,6 +221,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         },
       ),
     );
+  }
+
+  void createMarkerAndAddOnMap(
+      {required String id, required NLatLng point, RecordModel? data}) async {
+    final marker = NMarker(id: id, position: point);
+    final onMarkerInfoWindow = NInfoWindow.onMarker(
+      id: marker.info.id,
+      text: data!.title,
+    );
+    marker.openInfoWindow(onMarkerInfoWindow);
+    marker.setAlpha(0.8);
+    marker.setOnTapListener((m) => m.setAlpha(1.0));
+    await mapController?.addOverlay(marker);
   }
 
   Future<void> fetchPage(DocumentSnapshot? pageKey) async {
@@ -254,6 +284,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void onDetailTapChanged(bool detailTap) {
     setState(() {
       this.detailTap = detailTap;
+    });
+  }
+
+  void onTapMarkerChanged(NMarker newTapMarker) {
+    setState(() {
+      tapMarker = newTapMarker;
     });
   }
 
