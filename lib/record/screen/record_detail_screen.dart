@@ -1,8 +1,10 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 import 'package:map_marking/common/const/color.dart';
 import 'package:map_marking/record/layout/button_layout.dart';
@@ -12,15 +14,19 @@ import 'package:map_marking/record/provider/record_detail_provider.dart';
 import '../model/record_model.dart';
 
 class RecordDetailScreen extends ConsumerStatefulWidget {
-  NaverMapController? mapController;
+  PagingController<DocumentSnapshot?, RecordModel>? pagingController;
+  final NaverMapController? mapController;
   String markerId;
   bool detailTap;
+  final Function(String) removeMarker;
   final Function(bool) onDetailTapChanged;
   RecordDetailScreen({
     super.key,
-    this.mapController,
+    this.pagingController,
+    required this.mapController,
     required this.markerId,
     required this.detailTap,
+    required this.removeMarker,
     required this.onDetailTapChanged,
   });
 
@@ -82,19 +88,18 @@ class _RecordDetailScreenState extends ConsumerState<RecordDetailScreen> {
                       ],
                     ),
                     EditeDeleteButton(
-                      DeleteButton: () {
-                        detailProvider.deletePost(
-                          post.postId.toString(),
-                        );
-                        widget.mapController!.deleteOverlay(
-                          NOverlayInfo(
-                            type: NOverlayType.marker,
-                            id: post.markerId,
-                          ),
-                        );
-                        widget.detailTap = false;
-                        widget.onDetailTapChanged(widget.detailTap);
-                        context.pop();
+                      DeleteButton: () async {
+                        setState(() {
+                          detailProvider.deletePost(
+                            post.postId.toString(),
+                          );
+                          widget.removeMarker(widget.markerId.toString());
+
+                          widget.detailTap = false;
+                          widget.onDetailTapChanged(widget.detailTap);
+                          widget.pagingController?.refresh();
+                          context.pop();
+                        });
                       },
                       editButton: () {},
                     ),

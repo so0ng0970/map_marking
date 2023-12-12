@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
@@ -32,13 +33,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   double markerLatitude = 0.0;
   double markerLongitude = 0.0;
   Color markerColor = Colors.black;
-  NMarker tapMarker = NMarker(
-    id: 'edf4acf5-8705-4607-87af-fa61633d3f54',
-    position: const NLatLng(
-      0,
-      0,
-    ),
-  );
   static const pageSize = 8;
   String? markerId;
   final PagingController<DocumentSnapshot?, RecordModel> pagingController =
@@ -89,7 +83,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           final post = snapshot.data!;
 
                           return NaverMap(
-                            forceGesture: true,
                             options: NaverMapViewOptions(
                               initialCameraPosition: NCameraPosition(
                                 target: NLatLng(latitude, longitude),
@@ -113,18 +106,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     position: NLatLng(
                                         latLng.latitude, latLng.longitude),
                                   );
+
+                                  mapController?.addOverlay(marker);
                                 });
                                 print('Marker');
                               } else {
                                 print(latLng);
-                                print(tapMarker);
-                                tapMarker.setOnTapListener((marker) {
-                                  setState(() {
-                                    detailTap = true;
-                                    markerId = marker.info.id;
-                                    print('dd $markerId');
-                                  });
-                                });
                               }
                             },
                             onMapReady: (controller) {
@@ -146,6 +133,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   text: data.title,
                                 );
                                 marker.openInfoWindow(onMarkerInfoWindow);
+
                                 marker.setOnTapListener((marker) {
                                   setState(() {
                                     detailTap = true;
@@ -183,7 +171,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: RecordDetailScreen(
-                              mapController: mapController,
+                              removeMarker: removeMarker,
+                              mapController: mapController!,
                               markerId: markerId.toString(),
                               detailTap: detailTap,
                               onDetailTapChanged: onDetailTapChanged)),
@@ -194,7 +183,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         padding: const EdgeInsets.all(8.0),
                         child: markerTap
                             ? RecordScreen(
-                                tapMarker: tapMarker,
+                                addMarker: addMarker,
                                 testMarker: testMarker,
                                 recordTap: recordTap,
                                 markerTap: markerTap,
@@ -204,9 +193,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 onRecordTapChanged: onRecordTapChanged,
                                 mapController: mapController,
                                 markerColor: markerColor,
-                                onTapMarkerChanged: onTapMarkerChanged,
                               )
                             : RecordDetailListScreen(
+                                removeMarker: removeMarker,
                                 mapController: mapController,
                                 markerTap: markerTap,
                                 onMarkerTapChanged: onMarkerTapChanged,
@@ -223,17 +212,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void createMarkerAndAddOnMap(
-      {required String id, required NLatLng point, RecordModel? data}) async {
-    final marker = NMarker(id: id, position: point);
+  void removeMarker(String id) {
+    mapController!.deleteOverlay(NOverlayInfo(
+      type: NOverlayType.marker,
+      id: id,
+    ));
+    refreshMap();
+  }
+
+  void addMarker(
+      {required String id,
+      required String title,
+      required double latitude,
+      required double longitude}) {
+    final marker = NMarker(
+      position: NLatLng(latitude, longitude),
+      id: id,
+    );
     final onMarkerInfoWindow = NInfoWindow.onMarker(
-      id: marker.info.id,
-      text: data!.title,
+      id: id,
+      text: title,
     );
     marker.openInfoWindow(onMarkerInfoWindow);
-    marker.setAlpha(0.8);
-    marker.setOnTapListener((m) => m.setAlpha(1.0));
-    await mapController?.addOverlay(marker);
+
+    mapController!.addOverlay(marker);
+    refreshMap();
+  }
+
+  void refreshMap() {
+    setState(() {});
   }
 
   Future<void> fetchPage(DocumentSnapshot? pageKey) async {
@@ -284,12 +291,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void onDetailTapChanged(bool detailTap) {
     setState(() {
       this.detailTap = detailTap;
-    });
-  }
-
-  void onTapMarkerChanged(NMarker newTapMarker) {
-    setState(() {
-      tapMarker = newTapMarker;
     });
   }
 

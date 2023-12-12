@@ -12,11 +12,13 @@ import '../model/record_model.dart';
 import '../provider/record_detail_provider.dart';
 
 class RecordDetailListScreen extends ConsumerStatefulWidget {
+  final Function(String) removeMarker;
   bool markerTap;
- NaverMapController? mapController;
+  NaverMapController? mapController;
   final Function(bool) onMarkerTapChanged;
   RecordDetailListScreen({
     Key? key,
+    required this.removeMarker,
     required this.markerTap,
     this.mapController,
     required this.onMarkerTapChanged,
@@ -85,7 +87,9 @@ class _RecordDetailScreenState extends ConsumerState<RecordDetailListScreen> {
             height: 445,
             child: detailTap
                 ? RecordDetailScreen(
-                  mapController:widget.mapController ,
+                    removeMarker: widget.removeMarker,
+                    pagingController: pagingController,
+                    mapController: widget.mapController,
                     markerId: markerId.toString(),
                     detailTap: detailTap,
                     onDetailTapChanged: onDetailTapChanged,
