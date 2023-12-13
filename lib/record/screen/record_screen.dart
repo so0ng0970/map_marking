@@ -22,28 +22,25 @@ import '../provider/record_detail_provider.dart';
 class RecordScreen extends ConsumerStatefulWidget {
   bool markerTap;
   bool recordTap;
+  NMarker addMarker;
   double markerLatitude;
   double markerLongitude;
   Color markerColor;
-  final Function(
-      {required String id,
-      required String title,
-      required double latitude,
-      required double longitude}) addMarker;
   final Function(bool) onMarkerTapChanged;
   final Function(bool) onRecordTapChanged;
-
+  final Function(NMarker marker) onMarkerCreated;
   NaverMapController? mapController;
   String testMarker;
   RecordScreen({
     Key? key,
     required this.markerTap,
     required this.recordTap,
+    required this.addMarker,
     required this.markerLatitude,
     required this.markerLongitude,
     required this.markerColor,
-    required this.addMarker,
     required this.onMarkerTapChanged,
+    required this.onMarkerCreated,
     required this.onRecordTapChanged,
     required this.mapController,
     required this.testMarker,
@@ -188,12 +185,21 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                               id: widget.testMarker,
                             ),
                           );
-                          widget.addMarker(
-                              id: markerId,
-                              title: title,
-                              latitude: widget.markerLatitude,
-                              longitude: widget.markerLongitude);
-
+                          widget.addMarker = NMarker(
+                            iconTintColor: widget.markerColor,
+                            id: markerId,
+                            position: NLatLng(
+                              widget.markerLatitude,
+                              widget.markerLongitude,
+                            ),
+                          );
+                          widget.mapController!.addOverlay(widget.addMarker);
+                          final onMarkerInfoWindow = NInfoWindow.onMarker(
+                            id: markerId,
+                            text: title,
+                          );
+                          widget.addMarker.openInfoWindow(onMarkerInfoWindow);
+                          widget.onMarkerCreated(widget.addMarker);
                           widget.mapController;
                         }
                       }

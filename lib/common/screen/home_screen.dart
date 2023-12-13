@@ -33,6 +33,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   double markerLatitude = 0.0;
   double markerLongitude = 0.0;
   Color markerColor = Colors.black;
+  NMarker addMarker = NMarker(
+    id: '1',
+    position: const NLatLng(
+      0.0,
+      0.0,
+    ),
+  );
   static const pageSize = 8;
   String? markerId;
   final PagingController<DocumentSnapshot?, RecordModel> pagingController =
@@ -41,6 +48,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    mapController;
     _locationFuture = checkPermissionAndGetLocation();
     pagingController.addPageRequestListener((pageKey) {
       fetchPage(pageKey);
@@ -55,6 +63,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    NMarker? tapMarker;
+
     final detailProvider = ref.watch(recordDetailProvider.notifier);
     String testMarker = 'test1';
     return DefaultLayout(
@@ -98,43 +108,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   markerLatitude = latLng.latitude;
                                   markerLongitude = latLng.longitude;
 
-                                  final marker = NMarker(
-                                    iconTintColor: ref
-                                        .watch(markerColorProvider.notifier)
-                                        .state,
+                                  tapMarker = NMarker(
+                                    iconTintColor: markerColor,
                                     id: testMarker,
                                     position: NLatLng(
                                         latLng.latitude, latLng.longitude),
                                   );
 
-                                  mapController?.addOverlay(marker);
+                                  mapController?.addOverlay(tapMarker!);
                                 });
-                                print('Marker');
                               } else {
-                                print(latLng);
-                              }
-                            },
-                            onMapReady: (controller) {
-                              mapController = controller;
-
-                              for (var data in post) {
-                                final marker = NMarker(
-                                  iconTintColor: Color(data.selectedColor),
-                                  id: data.markerId,
-                                  position: NLatLng(
-                                    data.markerLatitude,
-                                    data.markerLongitude,
-                                  ),
-                                );
-                                mapController?.addOverlay(marker);
-
-                                final onMarkerInfoWindow = NInfoWindow.onMarker(
-                                  id: marker.info.id,
-                                  text: data.title,
-                                );
-                                marker.openInfoWindow(onMarkerInfoWindow);
-
-                                marker.setOnTapListener((marker) {
+                                print(addMarker);
+                                addMarker.setOnTapListener((marker) {
                                   setState(() {
                                     detailTap = true;
                                     markerId = marker.info.id;
@@ -142,6 +127,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   });
                                 });
                               }
+                            },
+                            onMapReady: (controller) {
+                              mapController = controller;
+                              addMarkers(post);
                             },
                           );
                         }
@@ -183,6 +172,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         padding: const EdgeInsets.all(8.0),
                         child: markerTap
                             ? RecordScreen(
+                                onMarkerCreated: (addMarker) {
+                                  setState(() {
+                                    this.addMarker = addMarker;
+                                  });
+                                },
                                 addMarker: addMarker,
                                 testMarker: testMarker,
                                 recordTap: recordTap,
@@ -212,30 +206,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  void addMarkers(List<RecordModel> post) {
+    for (var data in post) {
+      final marker = NMarker(
+        iconTintColor: Color(data.selectedColor),
+        id: data.markerId,
+        position: NLatLng(
+          data.markerLatitude,
+          data.markerLongitude,
+        ),
+      );
+      mapController?.addOverlay(marker);
+
+      final onMarkerInfoWindow = NInfoWindow.onMarker(
+        id: marker.info.id,
+        text: data.title,
+      );
+      marker.openInfoWindow(onMarkerInfoWindow);
+
+      marker.setOnTapListener((marker) {
+        setState(() {
+          detailTap = true;
+          markerId = marker.info.id;
+          print('dd $markerId');
+        });
+      });
+    }
+  }
+
   void removeMarker(String id) {
     mapController!.deleteOverlay(NOverlayInfo(
       type: NOverlayType.marker,
       id: id,
     ));
-    refreshMap();
-  }
-
-  void addMarker(
-      {required String id,
-      required String title,
-      required double latitude,
-      required double longitude}) {
-    final marker = NMarker(
-      position: NLatLng(latitude, longitude),
-      id: id,
-    );
-    final onMarkerInfoWindow = NInfoWindow.onMarker(
-      id: id,
-      text: title,
-    );
-    marker.openInfoWindow(onMarkerInfoWindow);
-
-    mapController!.addOverlay(marker);
     refreshMap();
   }
 
