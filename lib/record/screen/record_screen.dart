@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as Path;
 import 'package:uuid/uuid.dart';
@@ -22,28 +23,34 @@ import '../provider/record_detail_provider.dart';
 class RecordScreen extends ConsumerStatefulWidget {
   bool markerTap;
   bool recordTap;
-  NMarker addMarker;
-  double markerLatitude;
-  double markerLongitude;
-  Color markerColor;
+  String? postId;
+  NMarker? addMarker;
+  double? markerLatitude;
+  double? markerLongitude;
+  Color? markerColor;
   final Function(bool) onMarkerTapChanged;
   final Function(bool) onRecordTapChanged;
   final Function(NMarker marker) onMarkerCreated;
   NaverMapController? mapController;
   String testMarker;
+  bool edit;
+  Function(bool)? onEditTapChanged;
   RecordScreen({
     Key? key,
     required this.markerTap,
     required this.recordTap,
-    required this.addMarker,
-    required this.markerLatitude,
-    required this.markerLongitude,
-    required this.markerColor,
+    this.postId,
+    this.addMarker,
+    this.markerLatitude,
+    this.markerLongitude,
+    this.markerColor,
     required this.onMarkerTapChanged,
-    required this.onMarkerCreated,
     required this.onRecordTapChanged,
+    required this.onMarkerCreated,
     required this.mapController,
     required this.testMarker,
+    required this.edit,
+    this.onEditTapChanged,
   }) : super(key: key);
 
   @override
@@ -53,6 +60,7 @@ class RecordScreen extends ConsumerStatefulWidget {
 class _RecordScreenState extends ConsumerState<RecordScreen> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   List<XFile> selectedImages = [];
+  List<String> imageUrl = [];
   final FocusNode titleFocus = FocusNode();
   final FocusNode contentFocus = FocusNode();
   final FocusNode passwordFocus = FocusNode();
@@ -72,6 +80,34 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
     '미용실',
     '기타'
   ];
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    initializePost();
+  }
+
+  Future<void> initializePost() async {
+    if (widget.edit) {
+      List<RecordModel> existingPosts = await ref
+          .watch(recordDetailProvider.notifier)
+          .getPostListFromFirestore()
+          .first;
+
+      RecordModel existingDiaryPost =
+          existingPosts.firstWhere((post) => post.postId == widget.postId);
+
+      titleController.text = existingDiaryPost.title.toString();
+      contentController.text = existingDiaryPost.content.toString();
+      setState(() {
+        imageUrl = existingDiaryPost.imgUrl!;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,10 +116,6 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
       key: formKey,
       child: Column(
         children: [
-          const Icon(
-            Icons.drag_handle,
-            color: LOCATION,
-          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -91,7 +123,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                   onPressed: () {
                     setState(() {
                       removeController();
-                      widget.mapController!.deleteOverlay(
+                      widget.mapController?.deleteOverlay(
                         NOverlayInfo(
                           type: NOverlayType.marker,
                           id: widget.testMarker,
@@ -99,6 +131,9 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                       );
                       widget.onMarkerTapChanged(widget.markerTap);
                       widget.onRecordTapChanged(widget.recordTap);
+                      if (widget.edit) {
+                        context.pop();
+                      }
                     });
                   },
                   icon: const Icon(
@@ -125,13 +160,13 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                         widget.markerColor =
                             MARKINGBACKCOLOR[selectedColorIndex];
                         ref.watch(markerColorProvider.notifier).state =
-                            widget.markerColor;
+                            widget.markerColor!;
                         widget.mapController?.addOverlay(
                           NMarker(
-                            iconTintColor: widget.markerColor,
+                            iconTintColor: widget.markerColor!,
                             id: widget.testMarker,
-                            position: NLatLng(
-                                widget.markerLatitude, widget.markerLongitude),
+                            position: NLatLng(widget.markerLatitude!,
+                                widget.markerLongitude!),
                           ),
                         );
                       },
@@ -158,52 +193,57 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                       final imageUrl = await taskSnapshot.ref.getDownloadURL();
                       imageUrls.add(imageUrl);
                     }
-                    setState(() {
-                      if (widget.markerTap) {
-                        String markerId = uuid.v4().toString();
-                        String title = titleController.text;
-                        if (formKey.currentState?.validate() ?? false) {
-                          RecordModel recordModel = RecordModel(
-                            selectedColor: widget.markerColor.value,
-                            title: title,
-                            content: contentController.text,
-                            selected: selectedPicGroup.toString(),
-                            dataTime: DateTime.now(),
-                            markerLatitude: widget.markerLatitude,
-                            markerLongitude: widget.markerLongitude,
-                            imgUrl: imageUrls,
-                            markerId: markerId,
-                          );
-                          if (widget.recordTap) {
-                            postProvider.savePostToFirestore(recordModel);
-                          }
+                    setState(
+                      () {
+                        if (widget.markerTap) {
+                          String markerId = uuid.v4().toString();
+                          String title = titleController.text;
+                          if (formKey.currentState?.validate() ?? false) {
+                            RecordModel recordModel = RecordModel(
+                              selectedColor: widget.markerColor!.value,
+                              title: title,
+                              content: contentController.text,
+                              selected: selectedPicGroup.toString(),
+                              dataTime: DateTime.now(),
+                              markerLatitude: widget.markerLatitude!,
+                              markerLongitude: widget.markerLongitude!,
+                              imgUrl: imageUrls,
+                              markerId: markerId,
+                            );
+                            if (widget.recordTap) {
+                              postProvider.savePostToFirestore(recordModel);
+                            }
 
-                          removeController();
-                          widget.mapController!.deleteOverlay(
-                            NOverlayInfo(
-                              type: NOverlayType.marker,
-                              id: widget.testMarker,
-                            ),
-                          );
-                          widget.addMarker = NMarker(
-                            iconTintColor: widget.markerColor,
-                            id: markerId,
-                            position: NLatLng(
-                              widget.markerLatitude,
-                              widget.markerLongitude,
-                            ),
-                          );
-                          widget.mapController!.addOverlay(widget.addMarker);
-                          final onMarkerInfoWindow = NInfoWindow.onMarker(
-                            id: markerId,
-                            text: title,
-                          );
-                          widget.addMarker.openInfoWindow(onMarkerInfoWindow);
-                          widget.onMarkerCreated(widget.addMarker);
-                          widget.mapController;
+                            removeController();
+                            widget.mapController!.deleteOverlay(
+                              NOverlayInfo(
+                                type: NOverlayType.marker,
+                                id: widget.testMarker,
+                              ),
+                            );
+                            widget.addMarker = NMarker(
+                              iconTintColor: widget.markerColor!,
+                              id: markerId,
+                              position: NLatLng(
+                                widget.markerLatitude!,
+                                widget.markerLongitude!,
+                              ),
+                            );
+                            widget.mapController!.addOverlay(widget.addMarker!);
+                            final onMarkerInfoWindow = NInfoWindow.onMarker(
+                              id: markerId,
+                              text: title,
+                            );
+                            widget.addMarker!
+                                .openInfoWindow(onMarkerInfoWindow);
+                            widget.onMarkerCreated(widget.addMarker!);
+                            widget.mapController;
+                            ref.read(markerColorProvider.notifier).state =
+                                Colors.black;
+                          }
                         }
-                      }
-                    });
+                      },
+                    );
                     widget.onMarkerTapChanged(widget.markerTap);
                     widget.onRecordTapChanged(widget.recordTap);
                   },
@@ -267,7 +307,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                 const SizedBox(
                   height: 20,
                 ),
-                if (selectedImages.isNotEmpty)
+                if (selectedImages.isNotEmpty || imageUrl.isNotEmpty)
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
@@ -275,44 +315,71 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                     height: 100,
                     width: MediaQuery.of(context).size.width,
                     child: ListView.builder(
-                      itemCount: selectedImages.length + 1,
+                      itemCount: widget.edit
+                          ? imageUrl.length
+                          : selectedImages.length + 1,
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (context, index) {
-                        if (index == selectedImages.length) {
+                        if (index == selectedImages.length &&
+                            imageUrl.isEmpty) {
                           return dottedBorder(
                             width: 100,
                           );
                         }
-
                         return Stack(
                           children: [
-                            GestureDetector(
-                              onTap: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return ImageLayout(
-                                        initialIndex: index,
-                                        selectedImages: selectedImages,
-                                        networkImages: false,
-                                      );
-                                    });
-                              },
-                              child: SizedBox(
-                                width: 100,
-                                height: 100,
-                                child: Image.file(
-                                  File(selectedImages[index].path),
-                                  fit: BoxFit.fill,
+                            if (imageUrl.isEmpty)
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return ImageLayout(
+                                          initialIndex: index,
+                                          selectedImages: selectedImages,
+                                          networkImages: false,
+                                        );
+                                      });
+                                },
+                                child: SizedBox(
+                                  width: 100,
+                                  height: 100,
+                                  child: Image.file(
+                                    File(selectedImages[index].path),
+                                    fit: BoxFit.fill,
+                                  ),
                                 ),
                               ),
-                            ),
+                            if (imageUrl.isNotEmpty)
+                              GestureDetector(
+                                onTap: () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return ImageLayout(
+                                          initialIndex: index,
+                                          selectedNetworkImages: imageUrl,
+                                          networkImages: true,
+                                        );
+                                      });
+                                },
+                                child: SizedBox(
+                                  width: 100,
+                                  height: 100,
+                                  child: Image.network(
+                                    imageUrl[index].toString(),
+                                    fit: BoxFit.fill,
+                                  ),
+                                ),
+                              ),
                             Positioned(
                               right: 0,
                               child: IconButton(
                                 onPressed: () {
                                   setState(() {
-                                    selectedImages.removeAt(index);
+                                    widget.edit
+                                        ? imageUrl.removeAt(index)
+                                        : selectedImages.removeAt(index);
                                   });
                                 },
                                 icon: const Icon(
@@ -327,7 +394,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                       },
                     ),
                   ),
-                if (selectedImages.isEmpty)
+                if (selectedImages.isEmpty && imageUrl.isEmpty)
                   dottedBorder(
                     height: 100,
                     width: MediaQuery.of(context).size.width,

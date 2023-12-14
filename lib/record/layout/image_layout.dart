@@ -8,12 +8,14 @@ import 'package:image_picker/image_picker.dart';
 class ImageLayout extends StatefulWidget {
   List<XFile>? selectedImages;
   List<String>? selectedNetworkImages;
+
   bool networkImages;
   int initialIndex;
   ImageLayout({
     Key? key,
     this.selectedImages,
     this.selectedNetworkImages,
+
     required this.networkImages,
     required this.initialIndex,
   }) : super(key: key);

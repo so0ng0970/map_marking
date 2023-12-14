@@ -10,6 +10,7 @@ import 'package:map_marking/common/const/color.dart';
 import 'package:map_marking/record/layout/button_layout.dart';
 import 'package:map_marking/record/layout/image_layout.dart';
 import 'package:map_marking/record/provider/record_detail_provider.dart';
+import 'package:map_marking/record/screen/record_screen.dart';
 
 import '../model/record_model.dart';
 
@@ -18,16 +19,29 @@ class RecordDetailScreen extends ConsumerStatefulWidget {
   final NaverMapController? mapController;
   String markerId;
   bool detailTap;
+  bool markerTap;
+  bool recordTap;
   final Function(String) removeMarker;
   final Function(bool) onDetailTapChanged;
+  final Function(bool) onMarkerTapChanged;
+  final Function(bool) onRecordTapChanged;
+  final Function(NMarker marker) onMarkerCreated;
+  String testMarker;
+
   RecordDetailScreen({
     super.key,
     this.pagingController,
     required this.mapController,
     required this.markerId,
     required this.detailTap,
+    required this.markerTap,
+    required this.recordTap,
     required this.removeMarker,
     required this.onDetailTapChanged,
+    required this.onMarkerTapChanged,
+    required this.onRecordTapChanged,
+    required this.onMarkerCreated,
+    required this.testMarker,
   });
 
   @override
@@ -35,121 +49,163 @@ class RecordDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _RecordDetailScreenState extends ConsumerState<RecordDetailScreen> {
+  bool edit = false;
+  String? postId;
   @override
   Widget build(BuildContext context) {
     final detailProvider = ref.watch(recordDetailProvider.notifier);
 
-    return StreamBuilder(
-      stream: detailProvider.getPostListFromFirestore(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const CircularProgressIndicator();
-        }
-        if (snapshot.hasData) {
-          List<RecordModel> posts = snapshot.data!;
-          RecordModel? post = posts.firstWhere(
-            (post) => post.markerId == widget.markerId,
-          );
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: DETAIL_BORDER,
-                  width: 2,
+    return SizedBox(
+      height: 450,
+      child: StreamBuilder(
+        stream: detailProvider.getPostListFromFirestore(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const CircularProgressIndicator();
+          }
+          if (snapshot.hasData) {
+            List<RecordModel> posts = snapshot.data!;
+            RecordModel? post = posts.firstWhere(
+              (post) => post.markerId == widget.markerId,
+            );
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: DETAIL_BORDER,
+                    width: 2,
+                  ),
+                  color: DETAIL_BG,
                 ),
-                color: DETAIL_BG,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          post.title,
-                          style: const TextStyle(fontSize: 30),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              widget.detailTap = false;
-                              widget.onDetailTapChanged(widget.detailTap);
-                            });
-                          },
-                          child: const Icon(
-                            Icons.close,
-                            color: LOCATION,
-                          ),
-                        ),
-                      ],
-                    ),
-                    EditeDeleteButton(
-                      DeleteButton: () async {
-                        setState(() {
-                          detailProvider.deletePost(
-                            post.postId.toString(),
-                          );
-                          widget.removeMarker(widget.markerId.toString());
-
-                          widget.detailTap = false;
-                          widget.onDetailTapChanged(widget.detailTap);
-                          widget.pagingController?.refresh();
-                          context.pop();
-                        });
-                      },
-                      editButton: () {},
-                    ),
-                    const Divider(color: DETAIL_BORDER),
-                    if (post.imgUrl!.isNotEmpty)
-                      Column(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          SizedBox(
-                            height: 200,
-                            child: PageView.builder(
-                              itemCount: post.imgUrl!.length,
-                              itemBuilder: (context, index) {
-                                return GestureDetector(
-                                  onTap: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return ImageLayout(
-                                            networkImages: true,
-                                            selectedNetworkImages: post.imgUrl,
-                                            initialIndex: index);
-                                      },
-                                    );
-                                  },
-                                  child: Image.network(
-                                    post.imgUrl![index],
-                                    fit: BoxFit.cover,
-                                  ),
-                                );
-                              },
+                          Text(
+                            post.title,
+                            style: const TextStyle(fontSize: 30),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                widget.detailTap = false;
+                                widget.onDetailTapChanged(widget.detailTap);
+                              });
+                            },
+                            child: const Icon(
+                              Icons.close,
+                              color: LOCATION,
                             ),
                           ),
-                          const SizedBox(
-                            height: 20,
-                          )
                         ],
                       ),
-                    Text(
-                      post.content,
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                  ],
+                      EditeDeleteButton(
+                        DeleteButton: () async {
+                          setState(() {
+                            detailProvider.deletePost(
+                              post.postId.toString(),
+                            );
+                            widget.removeMarker(widget.markerId.toString());
+
+                            widget.detailTap = false;
+                            widget.onDetailTapChanged(widget.detailTap);
+                            widget.pagingController?.refresh();
+                            context.pop();
+                          });
+                        },
+                        editButton: () {
+                          setState(() {
+                            postId = post.postId;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) {
+                                return Scaffold(
+                                    body: SafeArea(
+                                  child: Container(
+                                    color: Colors.amber,
+                                    child: RecordScreen(
+                                        postId: postId,
+                                        markerTap: true,
+                                        recordTap: true,
+                                        onMarkerTapChanged:
+                                            widget.onMarkerTapChanged,
+                                        onRecordTapChanged:
+                                            widget.onRecordTapChanged,
+                                        onMarkerCreated: widget.onMarkerCreated,
+                                        mapController: widget.mapController,
+                                        testMarker: widget.testMarker,
+                                        edit: edit),
+                                  ),
+                                ));
+                              }),
+                            );
+                            widget.recordTap = true;
+                            widget.onRecordTapChanged(widget.recordTap);
+                            edit = true;
+                          });
+                        },
+                      ),
+                      const Divider(color: DETAIL_BORDER),
+                      if (post.imgUrl!.isNotEmpty)
+                        Column(
+                          children: [
+                            SizedBox(
+                              height: 200,
+                              child: PageView.builder(
+                                itemCount: post.imgUrl!.length,
+                                itemBuilder: (context, index) {
+                                  return GestureDetector(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return ImageLayout(
+                                              networkImages: true,
+                                              selectedNetworkImages:
+                                                  post.imgUrl,
+                                              initialIndex: index);
+                                        },
+                                      );
+                                    },
+                                    child: Image.network(
+                                      post.imgUrl![index],
+                                      fit: BoxFit.cover,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            )
+                          ],
+                        ),
+                      Text(
+                        post.content,
+                        style: const TextStyle(fontSize: 20),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        }
-        return const Text('d');
-      },
+            );
+          }
+          return const Text('d');
+        },
+      ),
     );
+  }
+
+  void onEditTapChanged(bool edit) {
+    setState(() {
+      this.edit = edit;
+    });
   }
 }
 

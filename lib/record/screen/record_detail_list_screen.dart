@@ -14,14 +14,29 @@ import '../provider/record_detail_provider.dart';
 class RecordDetailListScreen extends ConsumerStatefulWidget {
   final Function(String) removeMarker;
   bool markerTap;
+  String testMarker;
+  String markerId;
+  bool detailTap;
+  bool recordTap;
   NaverMapController? mapController;
   final Function(bool) onMarkerTapChanged;
+  final Function(bool) onDetailTapChanged;
+  final Function(bool) onRecordTapChanged;
+  final Function(NMarker marker) onMarkerCreated;
+
   RecordDetailListScreen({
     Key? key,
     required this.removeMarker,
     required this.markerTap,
+    required this.testMarker,
+    required this.markerId,
+    required this.detailTap,
+    required this.recordTap,
     this.mapController,
     required this.onMarkerTapChanged,
+    required this.onDetailTapChanged,
+    required this.onRecordTapChanged,
+    required this.onMarkerCreated,
   }) : super(key: key);
 
   @override
@@ -47,10 +62,6 @@ class _RecordDetailScreenState extends ConsumerState<RecordDetailListScreen> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Icon(
-          Icons.drag_handle,
-          color: LOCATION,
-        ),
         if (!detailTap)
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -83,18 +94,25 @@ class _RecordDetailScreenState extends ConsumerState<RecordDetailListScreen> {
             height: 10,
           ),
         SingleChildScrollView(
-          child: SizedBox(
-            height: 445,
-            child: detailTap
-                ? RecordDetailScreen(
-                    removeMarker: widget.removeMarker,
-                    pagingController: pagingController,
-                    mapController: widget.mapController,
-                    markerId: markerId.toString(),
-                    detailTap: detailTap,
-                    onDetailTapChanged: onDetailTapChanged,
-                  )
-                : PagedListView(
+          child: detailTap
+              ? RecordDetailScreen( 
+                 
+                  markerTap: widget.markerTap,
+                  recordTap: widget.recordTap,
+                  onMarkerTapChanged: widget.onMarkerTapChanged,
+                  onMarkerCreated: widget.onMarkerCreated,
+                  onRecordTapChanged: widget.onRecordTapChanged,
+                  mapController: widget.mapController,
+                  testMarker: widget.testMarker,
+                  removeMarker: widget.removeMarker,
+                  pagingController: pagingController,
+                  markerId: markerId.toString(),
+                  detailTap: detailTap,
+                  onDetailTapChanged: onDetailTapChanged,
+                )
+              : SizedBox(
+                  height: 445,
+                  child: PagedListView(
                     pagingController: pagingController,
                     builderDelegate: PagedChildBuilderDelegate(
                         itemBuilder: (context, data, index) {
@@ -158,7 +176,7 @@ class _RecordDetailScreenState extends ConsumerState<RecordDetailListScreen> {
                       );
                     }),
                   ),
-          ),
+                ),
         )
       ],
     );

@@ -91,4 +91,30 @@ class RecordDetailProvider extends StateNotifier<PostState> {
         .doc(postId)
         .delete();
   }
+
+  // 글 수정
+  Future<void> updatePostInFirestore({
+    required String postId,
+    List<String>? imgUrl,
+    required String content,
+    required String title,
+    required String selected,
+    required String diaryId,
+  }) async {
+    try {
+      await _firestore
+          .collection('user')
+          .doc(currentUser?.uid)
+          .collection('post')
+          .doc(postId)
+          .update({
+        'selected': selected,
+        'imgUrl': imgUrl,
+        'content': content,
+        'title': title,
+      });
+    } catch (e) {
+      print(e.toString());
+    }
+  }
 }

@@ -64,7 +64,7 @@ List SELECTEDCOLOR = [
   const Color(0xFFE1F8D4),
   const Color(0xFFE7EFFF),
   const Color(0xFF9BAEBC),
-  const Color(0xFFC9A8DB),
+  const Color(0xFFDFE9F0),
 ];
 List DROPBACKCOLOR = [
   const Color(0xFFC44F70),
@@ -73,7 +73,7 @@ List DROPBACKCOLOR = [
   const Color(0xFF279300),
   const Color(0xFF0081FF),
   const Color(0xFF1C0081),
-  const Color(0xFF9800FF),
+  const Color(0xff9a2cdeb),
 ];
 
 const ONE = Color.fromARGB(255, 234, 0, 255);
@@ -91,5 +91,5 @@ List MARKINGBACKCOLOR = [
   const Color.fromARGB(255, 94, 255, 0),
   const Color.fromARGB(255, 103, 245, 255),
   const Color.fromARGB(255, 30, 1, 136),
-  const Color.fromARGB(255, 30, 1, 136),
+  const Color.fromARGB(255, 219, 219, 219),
 ];

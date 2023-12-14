@@ -42,6 +42,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   );
   static const pageSize = 8;
   String? markerId;
+  String? postId;
   final PagingController<DocumentSnapshot?, RecordModel> pagingController =
       PagingController(firstPageKey: null);
 
@@ -64,9 +65,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     NMarker? tapMarker;
-
     final detailProvider = ref.watch(recordDetailProvider.notifier);
     String testMarker = 'test1';
+
     return DefaultLayout(
       body: FutureBuilder<String>(
         future: _locationFuture,
@@ -109,7 +110,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   markerLongitude = latLng.longitude;
 
                                   tapMarker = NMarker(
-                                    iconTintColor: markerColor,
+                                    iconTintColor: ref
+                                        .watch(markerColorProvider.notifier)
+                                        .state,
                                     id: testMarker,
                                     position: NLatLng(
                                         latLng.latitude, latLng.longitude),
@@ -121,6 +124,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 print(addMarker);
                                 addMarker.setOnTapListener((marker) {
                                   setState(() {
+                                    for (var data in post) {
+                                      postId = data.postId;
+                                    }
                                     detailTap = true;
                                     markerId = marker.info.id;
                                     print('dd $markerId');
@@ -160,40 +166,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: RecordDetailScreen(
-                              removeMarker: removeMarker,
-                              mapController: mapController!,
-                              markerId: markerId.toString(),
-                              detailTap: detailTap,
-                              onDetailTapChanged: onDetailTapChanged)),
+                            markerTap: markerTap,
+                            recordTap: recordTap,
+                            onMarkerTapChanged: onMarkerTapChanged,
+                            onRecordTapChanged: onRecordTapChanged,
+                            testMarker: testMarker,
+                            removeMarker: removeMarker,
+                            mapController: mapController!,
+                            markerId: markerId.toString(),
+                            detailTap: detailTap,
+                            onDetailTapChanged: onDetailTapChanged,
+                            onMarkerCreated: (addMarker) {
+                              setState(() {
+                                this.addMarker = addMarker;
+                              });
+                            },
+                          )),
                     )
                   : Container(
                       color: RECORD_BG,
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: markerTap
-                            ? RecordScreen(
-                                onMarkerCreated: (addMarker) {
-                                  setState(() {
-                                    this.addMarker = addMarker;
-                                  });
-                                },
-                                addMarker: addMarker,
-                                testMarker: testMarker,
-                                recordTap: recordTap,
-                                markerTap: markerTap,
-                                onMarkerTapChanged: onMarkerTapChanged,
-                                markerLongitude: markerLongitude,
-                                markerLatitude: markerLatitude,
-                                onRecordTapChanged: onRecordTapChanged,
-                                mapController: mapController,
-                                markerColor: markerColor,
-                              )
-                            : RecordDetailListScreen(
-                                removeMarker: removeMarker,
-                                mapController: mapController,
-                                markerTap: markerTap,
-                                onMarkerTapChanged: onMarkerTapChanged,
-                              ),
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.drag_handle,
+                              color: LOCATION,
+                            ),
+                            markerTap
+                                ? RecordScreen(
+                                    edit: false,
+                                    onMarkerCreated: (addMarker) {
+                                      setState(() {
+                                        this.addMarker = addMarker;
+                                      });
+                                    },
+                                    addMarker: addMarker,
+                                    testMarker: testMarker,
+                                    recordTap: recordTap,
+                                    markerTap: markerTap,
+                                    onMarkerTapChanged: onMarkerTapChanged,
+                                    markerLongitude: markerLongitude,
+                                    markerLatitude: markerLatitude,
+                                    onRecordTapChanged: onRecordTapChanged,
+                                    mapController: mapController,
+                                    markerColor: markerColor,
+                                  )
+                                : RecordDetailListScreen(
+                                    removeMarker: removeMarker,
+                                    markerTap: markerTap,
+                                    testMarker: testMarker,
+                                    markerId: markerId.toString(),
+                                    detailTap: detailTap,
+                                    recordTap: recordTap,
+                                    onMarkerTapChanged: onMarkerTapChanged,
+                                    onDetailTapChanged: onDetailTapChanged,
+                                    onRecordTapChanged: onRecordTapChanged,
+                                    onMarkerCreated: (addMarker) {
+                                      setState(() {
+                                        this.addMarker = addMarker;
+                                      });
+                                    },
+                                  ),
+                          ],
+                        ),
                       ),
                     ),
             );
