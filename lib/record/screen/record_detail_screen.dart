@@ -17,6 +17,7 @@ import '../model/record_model.dart';
 class RecordDetailScreen extends ConsumerStatefulWidget {
   PagingController<DocumentSnapshot?, RecordModel>? pagingController;
   final NaverMapController? mapController;
+
   String markerId;
   bool detailTap;
   bool markerTap;
@@ -65,7 +66,7 @@ class _RecordDetailScreenState extends ConsumerState<RecordDetailScreen> {
           }
           if (snapshot.hasData) {
             List<RecordModel> posts = snapshot.data!;
-            RecordModel? post = posts.firstWhere(
+            RecordModel post = posts.firstWhere(
               (post) => post.markerId == widget.markerId,
             );
             return Padding(
@@ -122,32 +123,30 @@ class _RecordDetailScreenState extends ConsumerState<RecordDetailScreen> {
                         editButton: () {
                           setState(() {
                             postId = post.postId;
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) {
-                                return Scaffold(
-                                    body: SafeArea(
-                                  child: Container(
-                                    color: Colors.amber,
-                                    child: RecordScreen(
-                                        postId: postId,
-                                        markerTap: true,
-                                        recordTap: true,
-                                        onMarkerTapChanged:
-                                            widget.onMarkerTapChanged,
-                                        onRecordTapChanged:
-                                            widget.onRecordTapChanged,
-                                        onMarkerCreated: widget.onMarkerCreated,
-                                        mapController: widget.mapController,
-                                        testMarker: widget.testMarker,
-                                        edit: edit),
-                                  ),
-                                ));
-                              }),
-                            );
                             widget.recordTap = true;
                             widget.onRecordTapChanged(widget.recordTap);
                             edit = true;
+                            showBottomSheet(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Container(
+                                    color: EDIT_BG,
+                                    height: 550,
+                                    child: RecordScreen(
+                                      postId: postId,
+                                      markerTap: true,
+                                      recordTap: true,
+                                      onMarkerTapChanged:
+                                          widget.onMarkerTapChanged,
+                                      onRecordTapChanged:
+                                          widget.onRecordTapChanged,
+                                      onMarkerCreated: widget.onMarkerCreated,
+                                      mapController: widget.mapController,
+                                      testMarker: widget.testMarker,
+                                      edit: edit,
+                                    ),
+                                  );
+                                });
                           });
                         },
                       ),

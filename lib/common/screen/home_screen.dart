@@ -58,7 +58,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void dispose() {
-    mapController?.dispose();
+    mapController!.dispose();
     super.dispose();
   }
 
@@ -122,13 +122,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 });
                               } else {
                                 print(addMarker);
+
                                 addMarker.setOnTapListener((marker) {
                                   setState(() {
                                     for (var data in post) {
                                       postId = data.postId;
+                                      markerId = data.markerId;
                                     }
                                     detailTap = true;
-                                    markerId = marker.info.id;
+
                                     print('dd $markerId');
                                   });
                                 });
@@ -222,11 +224,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     onMarkerTapChanged: onMarkerTapChanged,
                                     onDetailTapChanged: onDetailTapChanged,
                                     onRecordTapChanged: onRecordTapChanged,
-                                    onMarkerCreated: (addMarker) {
-                                      setState(() {
-                                        this.addMarker = addMarker;
-                                      });
-                                    },
+                                    onMarkerCreated: onMarkerCreated,
                                   ),
                           ],
                         ),
@@ -240,6 +238,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         },
       ),
     );
+  }
+
+  void onMarkerCreated(NMarker addMarker) {
+    setState(() {
+      this.addMarker = addMarker;
+    });
   }
 
   void addMarkers(List<RecordModel> post) {

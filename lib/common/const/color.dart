@@ -52,6 +52,9 @@ const UNSELECTED = Color(0xFFFCFAEC);
 const DETAIL_BG = Color(0xFFF7F2CB);
 const DETAIL_BORDER = Color(0xFFC1BD97);
 
+// edit screen
+const EDIT_BG = Color(0xFF7B9971);
+
 // button layout
 const BUTTON_BG = Color(0xFF006851);
 const BUTTON_BORDER = Color(0xFFF1FCF4);

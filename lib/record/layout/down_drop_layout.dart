@@ -3,6 +3,7 @@ import 'package:map_marking/common/const/color.dart';
 
 DropdownButtonFormField<String> dropdownButtonFormField({
   required String? selectedPicGroup,
+  required bool edit,
   required Function(String?) onChanged,
   required List<String> picGroup,
 }) {
@@ -74,6 +75,6 @@ DropdownButtonFormField<String> dropdownButtonFormField({
       );
     }).toList(),
     validator: (value) => value?.isEmpty ?? true ? '선택해주세요' : null,
-    onChanged: onChanged,
+    onChanged:edit? null : onChanged,
   );
 }

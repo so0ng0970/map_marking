@@ -71,6 +71,8 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
   String? selectedPicGroup;
   Uuid uuid = const Uuid();
 
+  double? editLatitude;
+  double? editLongitude;
   final List<String> picGroup = <String>[
     '음식',
     '카페',
@@ -78,17 +80,25 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
     '공연',
     '놀거리',
     '미용실',
-    '기타'
+    '추억'
   ];
   @override
   void initState() {
+    widget.mapController;
     super.initState();
   }
 
+  bool _isInitialized = false;
+
   @override
   void didChangeDependencies() {
+    if (!_isInitialized) {
+      if (widget.edit) {
+        initializePost();
+      }
+      _isInitialized = true;
+    }
     super.didChangeDependencies();
-    initializePost();
   }
 
   Future<void> initializePost() async {
@@ -100,310 +110,345 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
 
       RecordModel existingDiaryPost =
           existingPosts.firstWhere((post) => post.postId == widget.postId);
-
       titleController.text = existingDiaryPost.title.toString();
       contentController.text = existingDiaryPost.content.toString();
+      selectedPicGroup = existingDiaryPost.selected.toString();
+
       setState(() {
         imageUrl = existingDiaryPost.imgUrl!;
+
+        editLatitude = existingDiaryPost.markerLatitude;
+        editLongitude = existingDiaryPost.markerLongitude;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final postProvider = ref.watch(recordDetailProvider.notifier);
-    return Form(
-      key: formKey,
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              IconButton(
-                  onPressed: () {
-                    setState(() {
-                      removeController();
-                      widget.mapController?.deleteOverlay(
-                        NOverlayInfo(
-                          type: NOverlayType.marker,
-                          id: widget.testMarker,
-                        ),
-                      );
-                      widget.onMarkerTapChanged(widget.markerTap);
-                      widget.onRecordTapChanged(widget.recordTap);
-                      if (widget.edit) {
-                        context.pop();
-                      }
-                    });
-                  },
-                  icon: const Icon(
-                    Icons.close,
-                    color: LOCATION,
-                  )),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if (widget.recordTap)
-                SizedBox(
-                  height: 55,
-                  width: 120,
-                  child: dropdownButtonFormField(
-                    picGroup: picGroup,
-                    selectedPicGroup: selectedPicGroup,
-                    onChanged: (selectedItem) => setState(
-                      () {
-                        selectedPicGroup = selectedItem!;
-                        int selectedColorIndex =
-                            picGroup.indexOf(selectedItem.toString());
-                        widget.markerColor =
-                            MARKINGBACKCOLOR[selectedColorIndex];
-                        ref.watch(markerColorProvider.notifier).state =
-                            widget.markerColor!;
-                        widget.mapController?.addOverlay(
-                          NMarker(
-                            iconTintColor: widget.markerColor!,
+    return SingleChildScrollView(
+      child: Form(
+        key: formKey,
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                    onPressed: () {
+                      setState(() {
+                        removeController();
+                        widget.mapController?.deleteOverlay(
+                          NOverlayInfo(
+                            type: NOverlayType.marker,
                             id: widget.testMarker,
-                            position: NLatLng(widget.markerLatitude!,
-                                widget.markerLongitude!),
                           ),
                         );
-                      },
-                    ),
-                  ),
-                ),
-              const Spacer(),
-              if (widget.recordTap)
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        widget.markerTap ? POST_BUTTON : MARKER_BUTTON,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  onPressed: () async {
-                    List<String> imageUrls = [];
-                    for (var image in selectedImages) {
-                      File imageFile = File(image.path);
-                      final taskSnapshot = await FirebaseStorage.instance
-                          .ref('images/${Path.basename(imageFile.path)}')
-                          .putFile(imageFile);
-                      final imageUrl = await taskSnapshot.ref.getDownloadURL();
-                      imageUrls.add(imageUrl);
-                    }
-                    setState(
-                      () {
-                        if (widget.markerTap) {
-                          String markerId = uuid.v4().toString();
-                          String title = titleController.text;
-                          if (formKey.currentState?.validate() ?? false) {
-                            RecordModel recordModel = RecordModel(
-                              selectedColor: widget.markerColor!.value,
-                              title: title,
-                              content: contentController.text,
-                              selected: selectedPicGroup.toString(),
-                              dataTime: DateTime.now(),
-                              markerLatitude: widget.markerLatitude!,
-                              markerLongitude: widget.markerLongitude!,
-                              imgUrl: imageUrls,
-                              markerId: markerId,
-                            );
-                            if (widget.recordTap) {
-                              postProvider.savePostToFirestore(recordModel);
-                            }
-
-                            removeController();
-                            widget.mapController!.deleteOverlay(
-                              NOverlayInfo(
-                                type: NOverlayType.marker,
-                                id: widget.testMarker,
-                              ),
-                            );
-                            widget.addMarker = NMarker(
-                              iconTintColor: widget.markerColor!,
-                              id: markerId,
-                              position: NLatLng(
-                                widget.markerLatitude!,
-                                widget.markerLongitude!,
-                              ),
-                            );
-                            widget.mapController!.addOverlay(widget.addMarker!);
-                            final onMarkerInfoWindow = NInfoWindow.onMarker(
-                              id: markerId,
-                              text: title,
-                            );
-                            widget.addMarker!
-                                .openInfoWindow(onMarkerInfoWindow);
-                            widget.onMarkerCreated(widget.addMarker!);
-                            widget.mapController;
-                            ref.read(markerColorProvider.notifier).state =
-                                Colors.black;
-                          }
+                        widget.onMarkerTapChanged(widget.markerTap);
+                        widget.onRecordTapChanged(widget.recordTap);
+                        if (widget.edit) {
+                          context.pop();
                         }
-                      },
-                    );
-                    widget.onMarkerTapChanged(widget.markerTap);
-                    widget.onRecordTapChanged(widget.recordTap);
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.all(10.0),
-                    child: Text(
-                      '마커 추가하기',
-                      style: TextStyle(color: RECORD_TEXT, fontSize: 17),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          if (widget.markerTap && !widget.recordTap)
-            const Text(
-              '지도에 원하는 장소를 눌러주세요',
-              style: TextStyle(color: PHOTO_BUTTON),
-            ),
-          if (widget.recordTap)
-            Column(
-              children: [
-                const SizedBox(
-                  height: 20,
-                ),
-                textFormField(
-                  key: const ValueKey(1),
-                  focusNode: titleFocus,
-                  controller: titleController,
-                  maxLength: 15,
-                  borderRadius: 30,
-                  errorBorderRadius: 30,
-                  counterStyle: Theme.of(context).textTheme.bodySmall!.copyWith(
-                        color: RECORD_OUTLINE,
-                      ),
-                  hintText: '제목',
-                  keyboardType: TextInputType.text,
-                  validator: (val) => CheckValidate().validatelength(
-                    focusNode: titleFocus,
-                    value: val.toString(),
-                    title: '제목',
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                textFormField(
-                  key: const ValueKey(2),
-                  focusNode: contentFocus,
-                  controller: contentController,
-                  borderRadius: 10,
-                  errorBorderRadius: 10,
-                  hintText: '내용을 입력하세요',
-                  maxLines: 8,
-                  keyboardType: TextInputType.text,
-                  validator: (val) => CheckValidate().validatelength(
-                    focusNode: contentFocus,
-                    value: val.toString(),
-                    title: '내용',
-                  ),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                if (selectedImages.isNotEmpty || imageUrl.isNotEmpty)
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    height: 100,
-                    width: MediaQuery.of(context).size.width,
-                    child: ListView.builder(
-                      itemCount: widget.edit
-                          ? imageUrl.length
-                          : selectedImages.length + 1,
-                      scrollDirection: Axis.horizontal,
-                      itemBuilder: (context, index) {
-                        if (index == selectedImages.length &&
-                            imageUrl.isEmpty) {
-                          return dottedBorder(
-                            width: 100,
-                          );
-                        }
-                        return Stack(
-                          children: [
-                            if (imageUrl.isEmpty)
-                              GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return ImageLayout(
-                                          initialIndex: index,
-                                          selectedImages: selectedImages,
-                                          networkImages: false,
-                                        );
-                                      });
-                                },
-                                child: SizedBox(
-                                  width: 100,
-                                  height: 100,
-                                  child: Image.file(
-                                    File(selectedImages[index].path),
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                              ),
-                            if (imageUrl.isNotEmpty)
-                              GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return ImageLayout(
-                                          initialIndex: index,
-                                          selectedNetworkImages: imageUrl,
-                                          networkImages: true,
-                                        );
-                                      });
-                                },
-                                child: SizedBox(
-                                  width: 100,
-                                  height: 100,
-                                  child: Image.network(
-                                    imageUrl[index].toString(),
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                              ),
-                            Positioned(
-                              right: 0,
-                              child: IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    widget.edit
-                                        ? imageUrl.removeAt(index)
-                                        : selectedImages.removeAt(index);
-                                  });
-                                },
-                                icon: const Icon(
-                                  Icons.remove_circle_outlined,
-                                  size: 30,
-                                  color: WHITE_COLOR,
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                if (selectedImages.isEmpty && imageUrl.isEmpty)
-                  dottedBorder(
-                    height: 100,
-                    width: MediaQuery.of(context).size.width,
-                  )
+                      });
+                    },
+                    icon: const Icon(
+                      Icons.close,
+                      color: LOCATION,
+                    )),
               ],
             ),
-        ],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (widget.recordTap)
+                  SizedBox(
+                    height: 55,
+                    width: 120,
+                    child: dropdownButtonFormField(
+                      edit: widget.edit,
+                      picGroup: picGroup,
+                      selectedPicGroup: selectedPicGroup,
+                      onChanged: (selectedItem) => setState(
+                        () {
+                          selectedPicGroup = selectedItem!;
+                          int selectedColorIndex =
+                              picGroup.indexOf(selectedItem.toString());
+
+                          widget.markerColor =
+                              MARKINGBACKCOLOR[selectedColorIndex];
+                          ref.watch(markerColorProvider.notifier).state =
+                              widget.markerColor!;
+                          widget.mapController?.addOverlay(
+                            NMarker(
+                              iconTintColor: widget.markerColor!,
+                              id: widget.testMarker,
+                              position: NLatLng(widget.markerLatitude!,
+                                  widget.markerLongitude!),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                const Spacer(),
+                if (widget.recordTap)
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          widget.markerTap ? POST_BUTTON : MARKER_BUTTON,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    onPressed: () async {
+                      postUpload();
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.all(10.0),
+                      child: Text(
+                        '마커 추가하기',
+                        style: TextStyle(color: RECORD_TEXT, fontSize: 17),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            if (widget.markerTap && !widget.recordTap)
+              const Text(
+                '지도에 원하는 장소를 눌러주세요',
+                style: TextStyle(color: PHOTO_BUTTON),
+              ),
+            if (widget.recordTap)
+              Column(
+                children: [
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  textFormField(
+                    key: const ValueKey(1),
+                    focusNode: titleFocus,
+                    controller: titleController,
+                    maxLength: 15,
+                    borderRadius: 30,
+                    errorBorderRadius: 30,
+                    counterStyle:
+                        Theme.of(context).textTheme.bodySmall!.copyWith(
+                              color: RECORD_OUTLINE,
+                            ),
+                    hintText: '제목',
+                    keyboardType: TextInputType.text,
+                    validator: (val) => CheckValidate().validatelength(
+                      focusNode: titleFocus,
+                      value: val.toString(),
+                      title: '제목',
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  textFormField(
+                    key: const ValueKey(2),
+                    focusNode: contentFocus,
+                    controller: contentController,
+                    borderRadius: 10,
+                    errorBorderRadius: 10,
+                    hintText: '내용을 입력하세요',
+                    maxLines: 8,
+                    keyboardType: TextInputType.text,
+                    validator: (val) => CheckValidate().validatelength(
+                      focusNode: contentFocus,
+                      value: val.toString(),
+                      title: '내용',
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  if (selectedImages.isNotEmpty || imageUrl.isNotEmpty)
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      height: 100,
+                      width: MediaQuery.of(context).size.width,
+                      child: ListView.builder(
+                        itemCount: imageUrl.isNotEmpty
+                            ? imageUrl.length
+                            : selectedImages.length + 1,
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (context, index) {
+                          if (index == selectedImages.length &&
+                              imageUrl.isEmpty) {
+                            return dottedBorder(
+                              width: 100,
+                            );
+                          }
+                          return Stack(
+                            children: [
+                              if (imageUrl.isEmpty || selectedImages.isNotEmpty)
+                                GestureDetector(
+                                  onTap: () {
+                                    showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return ImageLayout(
+                                            initialIndex: index,
+                                            selectedImages: selectedImages,
+                                            networkImages: false,
+                                          );
+                                        });
+                                  },
+                                  child: SizedBox(
+                                    width: 100,
+                                    height: 100,
+                                    child: Image.file(
+                                      File(selectedImages[index].path),
+                                      fit: BoxFit.fill,
+                                    ),
+                                  ),
+                                ),
+                              if (imageUrl.isNotEmpty)
+                                GestureDetector(
+                                  onTap: () {
+                                    showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return ImageLayout(
+                                            initialIndex: index,
+                                            selectedNetworkImages: imageUrl,
+                                            networkImages: true,
+                                          );
+                                        });
+                                  },
+                                  child: SizedBox(
+                                    width: 100,
+                                    height: 100,
+                                    child: Image.network(
+                                      imageUrl[index].toString(),
+                                      fit: BoxFit.fill,
+                                    ),
+                                  ),
+                                ),
+                              Positioned(
+                                right: 0,
+                                child: IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      widget.edit
+                                          ? imageUrl.removeAt(index)
+                                          : selectedImages.removeAt(index);
+                                    });
+                                  },
+                                  icon: const Icon(
+                                    Icons.remove_circle_outlined,
+                                    size: 30,
+                                    color: WHITE_COLOR,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  if (selectedImages.isEmpty && imageUrl.isEmpty)
+                    dottedBorder(
+                      height: 100,
+                      width: MediaQuery.of(context).size.width,
+                    )
+                ],
+              ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> postUpload() async {
+    List<String> imageUrls = [];
+    for (var image in selectedImages) {
+      File imageFile = File(image.path);
+      final taskSnapshot = await FirebaseStorage.instance
+          .ref('images/${Path.basename(imageFile.path)}')
+          .putFile(imageFile);
+      final imageUrl = await taskSnapshot.ref.getDownloadURL();
+      imageUrls.add(imageUrl);
+    }
+    String markerId = uuid.v4().toString();
+    String title = titleController.text;
+    List<RecordModel> existingPosts = await ref
+        .watch(recordDetailProvider.notifier)
+        .getPostListFromFirestore()
+        .first;
+    setState(
+      () {
+        if (widget.markerTap) {
+          if (formKey.currentState?.validate() ?? false) {
+            if (!widget.edit) {
+              widget.mapController!.deleteOverlay(
+                NOverlayInfo(
+                  type: NOverlayType.marker,
+                  id: widget.testMarker,
+                ),
+              );
+              widget.addMarker = NMarker(
+                iconTintColor: widget.markerColor!,
+                id: markerId,
+                position: NLatLng(
+                  widget.markerLatitude!,
+                  widget.markerLongitude!,
+                ),
+              );
+              widget.mapController!.addOverlay(widget.addMarker!);
+              final onMarkerInfoWindow = NInfoWindow.onMarker(
+                id: markerId,
+                text: selectedPicGroup.toString(),
+              );
+              widget.addMarker!.openInfoWindow(onMarkerInfoWindow);
+              widget.onMarkerCreated(widget.addMarker!);
+              ref.read(markerColorProvider.notifier).state = Colors.black;
+              if (widget.recordTap) {
+                RecordModel recordModel = RecordModel(
+                  selectedColor: widget.markerColor!.value,
+                  title: title,
+                  content: contentController.text,
+                  selected: selectedPicGroup.toString(),
+                  dataTime: DateTime.now(),
+                  markerLatitude: widget.markerLatitude!,
+                  markerLongitude: widget.markerLongitude!,
+                  imgUrl: imageUrls,
+                  markerId: markerId,
+                );
+                ref
+                    .watch(recordDetailProvider.notifier)
+                    .savePostToFirestore(recordModel);
+              }
+            } else {
+              RecordModel existingDiaryPost = existingPosts
+                  .firstWhere((post) => post.postId == widget.postId);
+
+              existingDiaryPost = existingPosts
+                  .firstWhere((post) => post.postId == widget.postId);
+              List<String>? updatedImgUrl =
+                  imageUrls.isNotEmpty ? imageUrls : existingDiaryPost.imgUrl;
+              ref.watch(recordDetailProvider.notifier).updatePostInFirestore(
+                    postId: widget.postId.toString(),
+                    content: contentController.text,
+                    imgUrl: updatedImgUrl ?? [],
+                    title: title,
+                    selected: selectedPicGroup.toString(),
+                  );
+
+              context.pop();
+            }
+
+            removeController();
+          }
+        }
+      },
+    );
+
+    widget.onMarkerTapChanged(widget.markerTap);
+    widget.onRecordTapChanged(widget.recordTap);
   }
 
   void removeController() {
@@ -459,6 +504,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
             child: IconButton(
               onPressed: () {
                 getImages();
+                if (widget.edit) {}
               },
               icon: const Icon(
                 Icons.photo_library_outlined,

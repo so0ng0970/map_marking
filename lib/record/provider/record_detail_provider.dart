@@ -99,7 +99,6 @@ class RecordDetailProvider extends StateNotifier<PostState> {
     required String content,
     required String title,
     required String selected,
-    required String diaryId,
   }) async {
     try {
       await _firestore
