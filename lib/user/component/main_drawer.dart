@@ -1,13 +1,19 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import 'package:map_marking/user/provider/user_provider.dart';
 
 import '../../common/const/color.dart';
+import '../../record/provider/controller_provider.dart';
 import '../screen/login_sign_screen.dart';
 
 class MainDrawer extends ConsumerWidget {
-  const MainDrawer({super.key});
+  const MainDrawer({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -79,6 +85,13 @@ class MainDrawer extends ConsumerWidget {
                     () async {
                       if (user != null) {
                         await logout.logout(context);
+                        ref
+                            .watch(mapControllerProvider.notifier)
+                            .clearOverlays();
+                        ref
+                            .watch(mapControllerProvider.notifier)
+                            .disposeController();
+
                         context.pop();
                       } else {
                         context.goNamed(LoginSignScreen.routeName);

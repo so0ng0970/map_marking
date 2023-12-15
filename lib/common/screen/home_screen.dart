@@ -10,9 +10,11 @@ import 'package:map_marking/common/component/default_layout.dart';
 import 'package:map_marking/record/screen/record_detail_list_screen.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import '../../record/model/record_model.dart';
+import '../../record/provider/controller_provider.dart';
 import '../../record/provider/record_detail_provider.dart';
 import '../../record/screen/record_detail_screen.dart';
 import '../../record/screen/record_screen.dart';
+import '../../user/provider/user_provider.dart';
 import '../const/color.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -67,6 +69,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     NMarker? tapMarker;
     final detailProvider = ref.watch(recordDetailProvider.notifier);
     String testMarker = 'test1';
+    final user = ref.watch(userDataProvider).value;
 
     return DefaultLayout(
       body: FutureBuilder<String>(
@@ -81,8 +84,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             final latitude = position!.latitude;
             final longitude = position!.longitude;
             return SlidingUpPanel(
-              maxHeight: MediaQuery.of(context).size.height - 140,
-              minHeight: markerTap ? 150 : 100,
+              maxHeight:
+                  user == null ? 150 : MediaQuery.of(context).size.height - 140,
+              minHeight: user == null
+                  ? 30
+                  : markerTap
+                      ? 150
+                      : 100,
               body: Stack(
                 children: [
                   StreamBuilder<List<RecordModel>>(
@@ -127,7 +135,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   setState(() {
                                     for (var data in post) {
                                       postId = data.postId;
-                                      markerId = data.markerId;
+                                      markerId = marker.info.id;
                                     }
                                     detailTap = true;
 
@@ -137,6 +145,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               }
                             },
                             onMapReady: (controller) {
+                              ref
+                                  .read(mapControllerProvider.notifier)
+                                  .setMapController(controller);
+
                               mapController = controller;
                               addMarkers(post);
                             },
@@ -162,74 +174,96 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   )
                 ],
               ),
-              panel: detailTap
+              panel: user == null
                   ? Container(
                       color: RECORD_BG,
-                      child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: RecordDetailScreen(
-                            markerTap: markerTap,
-                            recordTap: recordTap,
-                            onMarkerTapChanged: onMarkerTapChanged,
-                            onRecordTapChanged: onRecordTapChanged,
-                            testMarker: testMarker,
-                            removeMarker: removeMarker,
-                            mapController: mapController!,
-                            markerId: markerId.toString(),
-                            detailTap: detailTap,
-                            onDetailTapChanged: onDetailTapChanged,
-                            onMarkerCreated: (addMarker) {
-                              setState(() {
-                                this.addMarker = addMarker;
-                              });
-                            },
-                          )),
-                    )
-                  : Container(
-                      color: RECORD_BG,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            const Icon(
-                              Icons.drag_handle,
-                              color: LOCATION,
+                      child: Column(
+                        children: const [
+                          Icon(
+                            Icons.drag_handle,
+                            color: LOCATION,
+                          ),
+                          SizedBox(
+                            height: 40,
+                          ),
+                          Center(
+                            child: Text(
+                              '로그인 후 마커 & 글쓰기 이용 가능합니다.',
+                              style:
+                                  TextStyle(fontSize: 17, color: MARKER_BUTTON),
                             ),
-                            markerTap
-                                ? RecordScreen(
-                                    edit: false,
-                                    onMarkerCreated: (addMarker) {
-                                      setState(() {
-                                        this.addMarker = addMarker;
-                                      });
-                                    },
-                                    addMarker: addMarker,
-                                    testMarker: testMarker,
-                                    recordTap: recordTap,
-                                    markerTap: markerTap,
-                                    onMarkerTapChanged: onMarkerTapChanged,
-                                    markerLongitude: markerLongitude,
-                                    markerLatitude: markerLatitude,
-                                    onRecordTapChanged: onRecordTapChanged,
-                                    mapController: mapController,
-                                    markerColor: markerColor,
-                                  )
-                                : RecordDetailListScreen(
-                                    removeMarker: removeMarker,
-                                    markerTap: markerTap,
-                                    testMarker: testMarker,
-                                    markerId: markerId.toString(),
-                                    detailTap: detailTap,
-                                    recordTap: recordTap,
-                                    onMarkerTapChanged: onMarkerTapChanged,
-                                    onDetailTapChanged: onDetailTapChanged,
-                                    onRecordTapChanged: onRecordTapChanged,
-                                    onMarkerCreated: onMarkerCreated,
-                                  ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ),
+                    )
+                  : detailTap
+                      ? Container(
+                          color: RECORD_BG,
+                          child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: RecordDetailScreen(
+                                markerTap: markerTap,
+                                recordTap: recordTap,
+                                onMarkerTapChanged: onMarkerTapChanged,
+                                onRecordTapChanged: onRecordTapChanged,
+                                testMarker: testMarker,
+                                removeMarker: removeMarker,
+                                mapController: mapController!,
+                                markerId: markerId.toString(),
+                                detailTap: detailTap,
+                                onDetailTapChanged: onDetailTapChanged,
+                                onMarkerCreated: (addMarker) {
+                                  setState(() {
+                                    this.addMarker = addMarker;
+                                  });
+                                },
+                              )),
+                        )
+                      : Container(
+                          color: RECORD_BG,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              children: [
+                                const Icon(
+                                  Icons.drag_handle,
+                                  color: LOCATION,
+                                ),
+                                markerTap
+                                    ? RecordScreen(
+                                        edit: false,
+                                        onMarkerCreated: (addMarker) {
+                                          setState(() {
+                                            this.addMarker = addMarker;
+                                          });
+                                        },
+                                        addMarker: addMarker,
+                                        testMarker: testMarker,
+                                        recordTap: recordTap,
+                                        markerTap: markerTap,
+                                        onMarkerTapChanged: onMarkerTapChanged,
+                                        markerLongitude: markerLongitude,
+                                        markerLatitude: markerLatitude,
+                                        onRecordTapChanged: onRecordTapChanged,
+                                        mapController: mapController,
+                                        markerColor: markerColor,
+                                      )
+                                    : RecordDetailListScreen(
+                                        removeMarker: removeMarker,
+                                        markerTap: markerTap,
+                                        testMarker: testMarker,
+                                        markerId: markerId.toString(),
+                                        detailTap: detailTap,
+                                        recordTap: recordTap,
+                                        onMarkerTapChanged: onMarkerTapChanged,
+                                        onDetailTapChanged: onDetailTapChanged,
+                                        onRecordTapChanged: onRecordTapChanged,
+                                        onMarkerCreated: onMarkerCreated,
+                                      ),
+                              ],
+                            ),
+                          ),
+                        ),
             );
           }
           return ErrorScreen(

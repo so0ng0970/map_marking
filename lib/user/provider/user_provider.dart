@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../model/user_model.dart';
 
+final userDataProvider =
+    StreamProvider<User?>((ref) => FirebaseAuth.instance.authStateChanges());
 final userProvider = StreamProvider.autoDispose<UserModel?>((ref) {
   return ref.watch(authProvider.notifier).getUserFirestore();
 });
