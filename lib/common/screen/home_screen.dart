@@ -60,7 +60,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void dispose() {
-    mapController!.dispose();
+    mapController?.dispose();
     super.dispose();
   }
 

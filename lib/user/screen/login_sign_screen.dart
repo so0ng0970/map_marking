@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -332,6 +333,7 @@ class _LoginSignScreenState extends ConsumerState<LoginSignScreen> {
                                     tokenType = res.tokenType;
                                     refreshToken = res.refreshToken;
                                   });
+
                                   String id = user.account.email;
                                   String name = user.account.name;
                                   String profileImage =
@@ -339,6 +341,25 @@ class _LoginSignScreenState extends ConsumerState<LoginSignScreen> {
                                   String idx = user.account.id.toString();
 
                                   print('$id,$name, $idx');
+
+                                  // Firebase 인증 정보로 변환
+                                  final AuthCredential credential =
+                                      OAuthProvider('naver').credential(
+                                    accessToken: accessToken,
+                                  );
+
+                                  // Firebase에 로그인
+                                  final UserCredential authResult =
+                                      await FirebaseAuth.instance
+                                          .signInWithCredential(credential);
+                                  final User firebaseUser = authResult.user!;
+
+                                  if (firebaseUser != null) {
+                                    print(
+                                        'Firebase에 로그인 성공: ${firebaseUser.uid}');
+                                  } else {
+                                    print('Firebase에 로그인 실패');
+                                  }
                                 } catch (error) {
                                   print('naver login error $error');
                                 }
