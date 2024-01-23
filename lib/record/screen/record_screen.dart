@@ -202,11 +202,12 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                     onPressed: () async {
                       postUpload();
                     },
-                    child: const Padding(
-                      padding: EdgeInsets.all(10.0),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
                       child: Text(
-                        '마커 추가하기',
-                        style: TextStyle(color: RECORD_TEXT, fontSize: 17),
+                        widget.edit ? "마커 수정하기" : '마커 추가하기',
+                        style:
+                            const TextStyle(color: RECORD_TEXT, fontSize: 17),
                       ),
                     ),
                   ),

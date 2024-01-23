@@ -1,16 +1,43 @@
-# map_marking
+<div align="center">
+<h2>MAAP:</h2>
 
-A new Flutter project.
+![maap](https://github.com/so0ng0970/map_marking/assets/108356773/278190f0-9cd9-4d81-ad11-8fc7490bdbfe)
 
-## Getting Started
+</div>
 
-This project is a starting point for a Flutter application.
+## 프로젝트 만든 계기
 
-A few resources to get you started if this is your first Flutter project:
+즐거운 경험을 한 장소를 지도에 기록하여 공유하면 어떨까하는 생각에서 이 프로젝트를 시작하게 되었습니다.
+<br>
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 프로젝트 소개
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- 'MAAP'은 사용자들이 지도에 마커를 남기고 그 위치에 대한 이야기를 기록하는 애플리케이션입니다.
+- 회원가입을 하지 않은 사용자도 지도를 조회할 수 있으며, 회원가입을 한 사용자는 지도에 마커를 생성할 수 있습니다.
+- 애플리케이션을 실행하면 처음 화면은 사용자의 현재 위치를 중심으로 보여지며, 하단의 버튼을 통해 언제든지 현재 위치를 기준으로 지도를 불러올 수 있습니다.
+- 마커를 생성할 때 카테고리, 제목, 내용, 사진을 추가할 수 있으며, 각 카테고리에 따라 마커의 색상이 변경되어 손쉽게 구분할 수 있습니다.
+- 마커에 추가된 사진은 클릭하면 확대하여 볼 수 있습니다.
+
+  <br>
+
+## 1. 개요
+
+- 프로젝트 이름: MAAP: 
+- 프로젝트 기간: 2023.11-2023.12
+- 개발 언어: Dart
+- 개발자: 김승원
+  <br>
+
+## 2. 개발 환경
+
+- Front-end : Flutter, riverpod, json_annotation, retrofit, go_router
+- Back-end : firebase
+
+
+<br>
+
+## 3. 페이지별 기능
+
+<br>
+
+### [초기화면 & 회원가입]

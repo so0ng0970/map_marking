@@ -115,82 +115,95 @@ class _RecordDetailScreenState extends ConsumerState<RecordDetailListScreen> {
                     child: PagedListView(
                       pagingController: pagingController,
                       builderDelegate: PagedChildBuilderDelegate(
-                          itemBuilder: (context, data, index) {
-                        final recordData = pagingController.itemList![index];
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                detailTap = true;
-                                markerId = recordData.markerId.toString();
-                              });
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: DETAIL_BORDER,
-                                  width: 2,
-                                ),
-                                color: DETAIL_BG,
-                              ),
-                              height: 150,
-                              child: Row(
-                                children: [
-                                  if (recordData.imgUrl!.isEmpty)
-                                    Image.asset(
-                                      'assets/images/icon/character1.png',
-                                      scale: 4.5,
-                                    ),
-                                  if (recordData.imgUrl!.isNotEmpty)
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8.0),
-                                      child: Image.network(
-                                        recordData.imgUrl![0],
-                                        scale: 4,
-                                      ),
-                                    ),
-                                  const SizedBox(
-                                    width: 5,
+                          noItemsFoundIndicatorBuilder: (context) =>
+                              const Center(
+                                child: Text(
+                                  '등록된 글이 없습니다',
+                                  style: TextStyle(
+                                    fontSize: 20,
                                   ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                ),
+                              ),
+                          itemBuilder: (context, data, index) {
+                            final recordData =
+                                pagingController.itemList![index];
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    detailTap = true;
+                                    markerId = recordData.markerId.toString();
+                                  });
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: DETAIL_BORDER,
+                                      width: 2,
+                                    ),
+                                    color: DETAIL_BG,
+                                  ),
+                                  height: 150,
+                                  child: Row(
                                     children: [
-                                      SizedBox(
-                                        width: 250,
-                                        child: Text(
-                                          recordData.title,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontSize: 25,
+                                      if (recordData.imgUrl!.isEmpty)
+                                        Image.asset(
+                                          'assets/images/icon/character1.png',
+                                          scale: 4.5,
+                                        ),
+                                      if (recordData.imgUrl!.isNotEmpty)
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          child: Image.network(
+                                            recordData.imgUrl![0],
+                                            fit: BoxFit.fill,
+                                            width: 150,
+                                            height: 200,
                                           ),
                                         ),
-                                      ),
                                       const SizedBox(
-                                        height: 5,
+                                        width: 5,
                                       ),
-                                      SizedBox(
-                                        width: 250,
-                                        child: Text(
-                                          recordData.content,
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w500,
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          SizedBox(
+                                            width: 220,
+                                            child: Text(
+                                              recordData.title,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                fontSize: 25,
+                                              ),
+                                            ),
                                           ),
-                                          overflow: TextOverflow.fade,
-                                          maxLines: 3,
-                                        ),
+                                          const SizedBox(
+                                            height: 5,
+                                          ),
+                                          SizedBox(
+                                            width: 220,
+                                            child: Text(
+                                              recordData.content,
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                              overflow: TextOverflow.fade,
+                                              maxLines: 3,
+                                            ),
+                                          )
+                                        ],
                                       )
                                     ],
-                                  )
-                                ],
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        );
-                      }),
+                            );
+                          }),
                     ),
                   ),
                 ),
