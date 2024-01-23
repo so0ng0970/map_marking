@@ -80,7 +80,7 @@
 | 비회원 & 현재 위치 이동 |
 | ----------------- |
 
-| splash | sign |
+| Non-member | Move to Current Location |
 |----------|----------|
 |![비회원](https://github.com/so0ng0970/map_marking/assets/108356773/c0b8adbc-35b7-4110-87d7-75deee5cf5c2)|![현재화면](https://github.com/so0ng0970/map_marking/assets/108356773/b02a4011-b22e-48ab-9529-646a6d452542)|
 <br>
