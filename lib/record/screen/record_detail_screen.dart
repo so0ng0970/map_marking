@@ -13,6 +13,7 @@ import 'package:map_marking/record/provider/record_detail_provider.dart';
 import 'package:map_marking/record/screen/record_screen.dart';
 
 import '../model/record_model.dart';
+import '../utils/data_util.dart';
 
 class RecordDetailScreen extends ConsumerStatefulWidget {
   PagingController<DocumentSnapshot?, RecordModel>? pagingController;
@@ -106,53 +107,67 @@ class _RecordDetailScreenState extends ConsumerState<RecordDetailScreen> {
                           ),
                         ],
                       ),
-                      EditeDeleteButton(
-                        DeleteButton: () async {
-                          setState(() {
-                            detailProvider.deletePost(
-                              post.postId.toString(),
-                            );
-                            widget.removeMarker(widget.markerId.toString());
+                      Row(
+                        children: [
+                          SizedBox(
+                            child: Text(DataUtils.getTimeFromDateTime(
+                              dateTime: post.dataTime,
+                            )),
+                          ),
+                          const Spacer(),
+                          EditeDeleteButton(
+                            DeleteButton: () async {
+                              setState(() {
+                                detailProvider.deletePost(
+                                  post.postId.toString(),
+                                );
+                                widget.removeMarker(widget.markerId.toString());
 
-                            widget.detailTap = false;
-                            widget.onDetailTapChanged(widget.detailTap);
-                            widget.pagingController?.refresh();
-                            context.pop();
-                          });
-                        },
-                        editButton: () {
-                          setState(() {
-                            postId = post.postId;
-                            widget.recordTap = true;
-                            widget.onRecordTapChanged(widget.recordTap);
-                            edit = true;
-                            showBottomSheet(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return Container(
-                                    color: EDIT_BG,
-                                    height: 550,
-                                    child: RecordScreen(
-                                      postId: postId,
-                                      markerTap: true,
-                                      recordTap: true,
-                                      onMarkerTapChanged:
-                                          widget.onMarkerTapChanged,
-                                      onRecordTapChanged:
-                                          widget.onRecordTapChanged,
-                                      onMarkerCreated: widget.onMarkerCreated,
-                                      mapController: widget.mapController,
-                                      testMarker: widget.testMarker,
-                                      edit: edit,
-                                    ),
-                                  );
-                                });
-                          });
-                        },
+                                widget.detailTap = false;
+                                widget.onDetailTapChanged(widget.detailTap);
+                                widget.pagingController?.refresh();
+                                context.pop();
+                              });
+                            },
+                            editButton: () {
+                              setState(() {
+                                postId = post.postId;
+                                widget.recordTap = true;
+                                widget.onRecordTapChanged(widget.recordTap);
+                                edit = true;
+                                showBottomSheet(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return Container(
+                                        color: EDIT_BG,
+                                        height: 550,
+                                        child: RecordScreen(
+                                          pagingController:
+                                              widget.pagingController,
+                                          postId: postId,
+                                          markerTap: true,
+                                          recordTap: true,
+                                          onMarkerTapChanged:
+                                              widget.onMarkerTapChanged,
+                                          onRecordTapChanged:
+                                              widget.onRecordTapChanged,
+                                          onMarkerCreated:
+                                              widget.onMarkerCreated,
+                                          mapController: widget.mapController,
+                                          testMarker: widget.testMarker,
+                                          edit: edit,
+                                        ),
+                                      );
+                                    });
+                              });
+                            },
+                          ),
+                        ],
                       ),
                       const Divider(color: DETAIL_BORDER),
                       if (post.imgUrl!.isNotEmpty)
                         Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SizedBox(
                               height: 200,
@@ -182,7 +197,7 @@ class _RecordDetailScreenState extends ConsumerState<RecordDetailScreen> {
                             ),
                             const SizedBox(
                               height: 20,
-                            )
+                            ),
                           ],
                         ),
                       Text(

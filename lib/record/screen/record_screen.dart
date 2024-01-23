@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:path/path.dart' as Path;
 import 'package:uuid/uuid.dart';
 
@@ -21,6 +23,8 @@ import '../layout/image_layout.dart';
 import '../provider/record_detail_provider.dart';
 
 class RecordScreen extends ConsumerStatefulWidget {
+  PagingController<DocumentSnapshot?, RecordModel>? pagingController;
+
   bool markerTap;
   bool recordTap;
   String? postId;
@@ -37,6 +41,7 @@ class RecordScreen extends ConsumerStatefulWidget {
   Function(bool)? onEditTapChanged;
   RecordScreen({
     Key? key,
+    required this.pagingController,
     required this.markerTap,
     required this.recordTap,
     this.postId,
@@ -82,9 +87,12 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
     '미용실',
     '추억'
   ];
+  PagingController<DocumentSnapshot?, RecordModel>? _pagingController;
+
   @override
   void initState() {
     widget.mapController;
+    _pagingController = widget.pagingController;
     super.initState();
   }
 
@@ -438,7 +446,7 @@ class _RecordScreenState extends ConsumerState<RecordScreen> {
                     title: title,
                     selected: selectedPicGroup.toString(),
                   );
-
+              _pagingController?.refresh();
               context.pop();
             }
 

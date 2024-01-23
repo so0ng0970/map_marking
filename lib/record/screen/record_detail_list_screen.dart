@@ -10,6 +10,7 @@ import 'package:map_marking/record/screen/record_detail_screen.dart';
 
 import '../model/record_model.dart';
 import '../provider/record_detail_provider.dart';
+import '../utils/data_util.dart';
 
 class RecordDetailListScreen extends ConsumerStatefulWidget {
   final Function(String) removeMarker;
@@ -168,33 +169,47 @@ class _RecordDetailScreenState extends ConsumerState<RecordDetailListScreen> {
                                         width: 5,
                                       ),
                                       Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
+                                          Column(
+                                            children: [
+                                              SizedBox(
+                                                width: 220,
+                                                child: Text(
+                                                  recordData.title,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 25,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 5,
+                                              ),
+                                              SizedBox(
+                                                width: 220,
+                                                child: Text(
+                                                  recordData.content,
+                                                  style: const TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                  overflow: TextOverflow.fade,
+                                                  maxLines: 3,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                           SizedBox(
                                             width: 220,
                                             child: Text(
-                                              recordData.title,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                fontSize: 25,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            height: 5,
-                                          ),
-                                          SizedBox(
-                                            width: 220,
-                                            child: Text(
-                                              recordData.content,
-                                              style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                              overflow: TextOverflow.fade,
-                                              maxLines: 3,
-                                            ),
+                                                DataUtils.getTimeFromDateTime(
+                                              dateTime: recordData.dataTime,
+                                            )),
                                           )
                                         ],
                                       )

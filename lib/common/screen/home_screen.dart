@@ -231,6 +231,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 ),
                                 markerTap
                                     ? RecordScreen(
+                                        pagingController: pagingController,
                                         edit: false,
                                         onMarkerCreated: (addMarker) {
                                           setState(() {
