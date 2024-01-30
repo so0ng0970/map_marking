@@ -133,4 +133,4 @@ firebase.json
 functions/package-lock.json
 functions/package.json
 functions/.eslintrc.js
-functions/const.js
+functions/data/const.js
