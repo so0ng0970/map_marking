@@ -1,7 +1,8 @@
+const functions = require("firebase-functions");
 const naverRequestMeUrl = "https://openapi.naver.com/v1/nid/me";
-
+const { CLIENT_ID, CLIENT_SECRET } = require("../data/const");
 exports.naverCustomAuth = functions
-  .region("asia-northeast3")
+  .region("us-central1")
   .https.onRequest((req, res) => {
     functions.logger.log("네이버 로그인 시작 body", req.body);
     const token = req.body.token;
@@ -25,8 +26,8 @@ function naverRequestMe(naverAccessToken) {
     method: "GET",
     headers: {
       Authorization: "Bearer " + naverAccessToken,
-      "X-Naver-Client-Id": "본인의 client id~~~~~~~~~~~~",
-      "X-Naver-Client-Secret": "본인의 client Secret~~~~~~~~~~~~",
+      "X-Naver-Client-Id": CLIENT_ID,
+      "X-Naver-Client-Secret": CLIENT_SECRET,
     },
     url: naverRequestMeUrl,
   });
@@ -89,4 +90,3 @@ function createNaverFirebaseToken(naverAccessToken) {
       return admin.auth().createCustomToken(userId, { provider: "NAVER" });
     });
 }
-exports.naverCustomAuth = naverCustomAuth;

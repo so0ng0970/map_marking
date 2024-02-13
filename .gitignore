@@ -57,7 +57,7 @@ build/
 windows/
 linux/
 .gitinnore
-
+node_modules
 flutter_*.png
 linked_*.ds
 unlinked.ds
@@ -130,7 +130,7 @@ android/
 lib/common/const/data.dart
 .firebaserc
 firebase.json
-function/package-lock.json
-function/package.json
-function/.eslintrc.js
-function/data/const.js
+functions/package-lock.json
+functions/package.json
+functions/.eslintrc.js
+functions/data/const.js
