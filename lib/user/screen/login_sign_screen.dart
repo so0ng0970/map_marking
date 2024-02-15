@@ -7,6 +7,7 @@ import 'package:map_marking/common/screen/home_screen.dart';
 import 'package:map_marking/user/component/check_validate.dart';
 import 'package:map_marking/user/component/custom_email.dart';
 import 'package:map_marking/user/provider/login_sign_provider.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../common/const/color.dart';
 
@@ -322,47 +323,36 @@ class _LoginSignScreenState extends ConsumerState<LoginSignScreen> {
                           if (!sign)
                             GestureDetector(
                               onTap: () async {
-                                try {
-                                  final NaverLoginResult user =
-                                      await FlutterNaverLogin.logIn();
-                                  NaverAccessToken res = await FlutterNaverLogin
-                                      .currentAccessToken;
+                                final NaverLoginResult user =
+                                    await FlutterNaverLogin.logIn();
+                                NaverAccessToken res =
+                                    await FlutterNaverLogin.currentAccessToken;
 
-                                  setState(() {
-                                    accessToken = res.accessToken;
-                                    tokenType = res.tokenType;
-                                    refreshToken = res.refreshToken;
-                                  });
+                                setState(() {
+                                  accessToken = res.accessToken;
+                                  tokenType = res.tokenType;
+                                  refreshToken = res.refreshToken;
+                                });
 
-                                  String id = user.account.email;
-                                  String name = user.account.name;
-                                  String profileImage =
-                                      user.account.profileImage;
-                                  String idx = user.account.id.toString();
+                                final AuthCredential credential =
+                                    OAuthProvider('naver').credential(
+                                  accessToken: accessToken,
+                                );
 
-                                  print('$id,$name, $idx');
+                                final UserCredential authResult =
+                                    await FirebaseAuth.instance
+                                        .signInWithCredential(credential);
+                                final User firebaseUser = authResult.user!;
+                                final HttpsCallable callable =
+                                    FirebaseFunctions.instanceFor(
+                                            region: 'us-central1')
+                                        .httpsCallable('naverCustomAuth');
+                                final HttpsCallableResult result =
+                                    await callable.call(<String, dynamic>{
+                                  'token': accessToken,
+                                });
 
-                                  // Firebase 인증 정보로 변환
-                                  final AuthCredential credential =
-                                      OAuthProvider('naver').credential(
-                                    accessToken: accessToken,
-                                  );
-
-                                  // Firebase에 로그인
-                                  final UserCredential authResult =
-                                      await FirebaseAuth.instance
-                                          .signInWithCredential(credential);
-                                  final User firebaseUser = authResult.user!;
-
-                                  if (firebaseUser != null) {
-                                    print(
-                                        'Firebase에 로그인 성공: ${firebaseUser.uid}');
-                                  } else {
-                                    print('Firebase에 로그인 실패');
-                                  }
-                                } catch (error) {
-                                  print('naver login error $error');
-                                }
+                                print(result.data);
                               },
                               child: SizedBox(
                                 height: 50,

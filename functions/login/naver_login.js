@@ -3,22 +3,20 @@ const naverRequestMeUrl = "https://openapi.naver.com/v1/nid/me";
 const { CLIENT_ID, CLIENT_SECRET } = require("../data/const");
 exports.naverCustomAuth = functions
   .region("us-central1")
-  .https.onRequest((req, res) => {
-    functions.logger.log("네이버 로그인 시작 body", req.body);
-    const token = req.body.token;
-    if (!token)
-      return res
-        .status(400)
-        .send({ error: "There is no token." })
-        .send({ message: "Access token is a required parameter." });
+  .https.onCall((data, context) => {
+    const token = data.token;
+    if (!token) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "Access token is a required parameter."
+      );
+    }
 
     console.log(`Verifying naver token: ${token}`);
-    createNaverFirebaseToken(token).then((firebaseToken) => {
+    return createNaverFirebaseToken(token).then((firebaseToken) => {
       console.log(`Returning firebase token to user: ${firebaseToken}`);
-      res.send({ firebase_token: firebaseToken });
+      return { firebase_token: firebaseToken };
     });
-
-    return;
   });
 function naverRequestMe(naverAccessToken) {
   console.log("Requesting user profile from Naver API server.");
@@ -41,7 +39,7 @@ async function updateOrCreateUserNaver(userId, email) {
     displayName: userId,
   };
   updateParams["displayName"] = email;
-  updateParams["email"] = email; //22.02.22 추가함
+  updateParams["email"] = email;
   functions.logger.log("updating or creating a firebase user,", updateParams);
 
   try {

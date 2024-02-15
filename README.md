@@ -30,7 +30,7 @@
 
 ## 2. 개발 환경
 
-- Front-end : Flutter, riverpod, json_annotation, retrofit, go_router
+- Front-end : Flutter, riverpod, json_annotation, retrofit, geolocator, go_router
 - Back-end : firebase
 
 
